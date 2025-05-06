@@ -15,5 +15,6 @@
 	<classpathentry kind="lib" path="lib/javafx-sdk-24/lib/jfx.incubator.input.jar"/>
 	<classpathentry kind="lib" path="lib/javafx-sdk-24/lib/jfx.incubator.richtext.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-j-9.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/fontawesomefx-8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
