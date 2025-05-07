@@ -4,6 +4,7 @@ package controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,17 +21,27 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class DashboardController implements Initializable {
     
-    // @FXML
-    // private Button bars_btn;
 
-    // @FXML
-    // private Button arrow_btn;
+    @FXML
+    private Button close;
 
-    // @FXML
-    // private AnchorPane nav_form;
+    @FXML
+    private Button minimize;
+
+    @FXML
+    private Button bars_btn;
+
+    @FXML
+    private Button arrow_btn;
+
+    @FXML
+    private AnchorPane nav_form;
+
+    
 
     @FXML
     private Circle circle_image;
@@ -86,8 +97,86 @@ public class DashboardController implements Initializable {
     @FXML
     private Button take_btn;
 
+    @FXML
+    private AnchorPane mainCenter_form;
+
+    @FXML
+    private Button halfNav_availableBtn;
+
+    @FXML
+    private AnchorPane halfNav_form;
+
+    @FXML
+    private Button halfNav_returnBtn;
+
+    @FXML
+    private Button halfNav_saveBtn;
+
+    @FXML
+    private Button halfNav_takeBtn;
+
+    @FXML
+    private Circle smallCircle_image;
+
     private double x = 0;
     private double y = 0;
+
+    public void sliderArrow(){
+
+        TranslateTransition slide = new TranslateTransition();
+
+        slide.setDuration(Duration.seconds(0.5));
+        slide.setNode(nav_form);
+        slide.setToX(-226);
+
+        TranslateTransition slide1 = new TranslateTransition();
+
+        slide1.setDuration(Duration.seconds(0.5));
+        slide1.setNode(mainCenter_form);
+        slide1.setToX(-226+90);
+
+        TranslateTransition slide2 = new TranslateTransition();
+        slide2.setDuration(Duration.seconds(.5));
+        slide2.setNode(halfNav_form);
+        slide2.setToX(0);
+
+     
+        slide.setOnFinished((ActionEvent event) -> {
+            arrow_btn.setVisible(false);
+            bars_btn.setVisible(true);
+        });
+        slide2.play();
+        slide1.play();
+        slide.play();
+    }
+
+    public void sliderBars(){
+
+        TranslateTransition slide = new TranslateTransition();
+
+        slide.setDuration(Duration.seconds(0.5));
+        slide.setNode(nav_form);
+        slide.setToX(0);
+
+        TranslateTransition slide1 = new TranslateTransition();
+        slide1.setDuration(Duration.seconds(0.5));
+        slide1.setNode(mainCenter_form);
+        slide1.setToX(0);
+
+        TranslateTransition slide2 = new TranslateTransition();
+        slide2.setDuration(Duration.seconds(.5));
+        slide2.setNode(halfNav_form);
+        slide2.setToX(-77);
+
+        slide.setOnFinished((ActionEvent event) -> {
+            arrow_btn.setVisible(true);
+            bars_btn.setVisible(false);
+        });
+        slide2.play();
+        slide1.play();
+        slide.play();
+    }
+    //qua bo doiiii
 
     @FXML
     public void logout(ActionEvent event) {
@@ -124,7 +213,18 @@ public class DashboardController implements Initializable {
         }
     }
 
+public void exit() {
 
+        System.exit(0);
+
+    }
+
+    public void minimize() {
+
+        Stage stage = (Stage) minimize.getScene().getWindow();
+        stage.setIconified(true);
+
+    }
 
     // @override
     public void initialize(URL location, ResourceBundle resources) {

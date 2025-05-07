@@ -23,5 +23,9 @@
             <FontAwesomeIcon glyphName="USERS" layoutX="225.0" layoutY="71.0" size="5.5em" />
          </children>
       </AnchorPane>
+      <Button fx:id="close" layoutX="641.0" layoutY="1.0" mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="50.0" styleClass="close" stylesheets="@designLogin.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+      <Button fx:id="minimize" layoutX="591.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="25.0" prefWidth="50.0" styleClass="minimize" stylesheets="@designLogin.css" />
+      <FontAwesomeIcon fill="WHITE" glyphName="CLOSE" layoutX="659.0" layoutY="20.0" />
+      <FontAwesomeIcon fill="WHITE" glyphName="MINUS" layoutX="609.0" layoutY="21.0" text="" />
    </children>
 </AnchorPane>

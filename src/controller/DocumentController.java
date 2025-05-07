@@ -46,6 +46,12 @@ public class DocumentController implements Initializable {
 
     @FXML
     private Button login_Btn;
+
+    @FXML
+    private Button close;
+
+    @FXML
+    private Button minimize;
     
     
     public void login(){
@@ -121,6 +127,18 @@ public class DocumentController implements Initializable {
         
     }
 
+
+
+    @FXML
+    public void minimize(){
+        Stage stage = (Stage)minimize.getScene().getWindow();
+        stage.setIconified(true);
+    }
+    
+    @FXML
+    public void exit(){
+        System.exit(0);
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
