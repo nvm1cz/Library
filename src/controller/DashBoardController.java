@@ -23,7 +23,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-public class DashboardController implements Initializable {
+public class DashBoardController implements Initializable {
     
 
     @FXML
