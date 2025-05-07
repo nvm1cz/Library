@@ -28,6 +28,7 @@ public class DashboardController implements Initializable {
 
     @FXML
     private Button close;
+    
 
     @FXML
     private Button minimize;
