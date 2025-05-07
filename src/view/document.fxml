@@ -19,7 +19,7 @@
             </Label>
             <TextField fx:id="studentNumber" layoutX="161.0" layoutY="141.0" prefHeight="25.0" prefWidth="200.0" promptText="Student Number" styleClass="textfield" stylesheets="@designLogin.css" />
             <PasswordField fx:id="password" layoutX="161.0" layoutY="177.0" prefHeight="25.0" prefWidth="200.0" promptText="Password" styleClass="textfield" stylesheets="@designLogin.css" />
-            <Button layoutX="226.0" layoutY="238.0" mnemonicParsing="false" onAction="#login" prefHeight="33.0" prefWidth="69.0" styleClass="login-btn" stylesheets="@designLogin.css" text="Login" />
+            <Button fx:id="login_Btn" layoutX="226.0" layoutY="238.0" mnemonicParsing="false" onAction="#login" prefHeight="33.0" prefWidth="69.0" styleClass="login-btn" stylesheets="@designLogin.css" text="Login" />
             <FontAwesomeIcon glyphName="USERS" layoutX="225.0" layoutY="71.0" size="5.5em" />
          </children>
       </AnchorPane>

@@ -35,6 +35,19 @@ public class DocumentController implements Initializable {
     private double x = 0;
     private double y = 0;
     
+    
+
+
+    @FXML
+    private TextField studentNumber;
+
+    @FXML
+    private PasswordField password;
+
+    @FXML
+    private Button login_Btn;
+    
+    
     public void login(){
         
         String sql = "SELECT * FROM students WHERE studentNumber = ? and password = ?";
@@ -70,7 +83,7 @@ public class DocumentController implements Initializable {
                     login_Btn.getScene().getWindow().hide();
                     
 //                    FOR DASHBOARD
-                    Parent root = FXMLLoader.load(getClass().getResource("dashboard.fxml"));
+                    Parent root = FXMLLoader.load(getClass().getResource("/view/dashboard.fxml"));
                     
                     Stage stage = new Stage();
                     
@@ -108,33 +121,6 @@ public class DocumentController implements Initializable {
         
     }
 
-
-    @FXML
-    private TextField studentNumber;
-
-    @FXML
-    private PasswordField password;
-
-    @FXML
-    private Button login_Btn;
-
-    @FXML
-    private Button close;
-
-    @FXML
-    private Button minimize;
-
-
-    @FXML
-    public void minimize(){
-        Stage stage = (Stage)minimize.getScene().getWindow();
-        stage.setIconified(true);
-    }
-
-    @FXML
-    public void exit(){
-        System.exit(0);
-    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
