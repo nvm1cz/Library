@@ -1,24 +1,50 @@
 package controller;
 
 
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import java.io.File;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.Action;
+
+import dao.Database;
 import javafx.animation.TranslateTransition;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
@@ -72,19 +98,19 @@ public class DashBoardController implements Initializable {
     private AnchorPane availableBooks_form;
 
     @FXML
-    private TableView<?> availableBooks_tableView;
+    private TableView<availableBooks> availableBooks_tableView;
 
     @FXML
-    private TableColumn<?, ?> col_ab_bookTitle;
+    private TableColumn<availableBooks, String> col_ab_bookTitle;
 
     @FXML
-    private TableColumn<?, ?> col_ab_author;
+    private TableColumn<availableBooks, String> col_ab_author;
 
     @FXML
-    private TableColumn<?, ?> col_ab_bookType;
+    private TableColumn<availableBooks, String> col_ab_bookType;
 
     @FXML
-    private TableColumn<?, ?> col_ab_publishedDate;
+    private TableColumn<availableBooks, String> col_ab_publishedDate;
 
     @FXML
     private ImageView availableBooks_imageView;
@@ -119,6 +145,381 @@ public class DashBoardController implements Initializable {
     @FXML
     private Circle smallCircle_image;
 
+    @FXML
+    private AnchorPane issue_form;
+
+    @FXML
+    private AnchorPane returnBook_form;
+
+    @FXML
+    private AnchorPane savedBook_form;
+
+    @FXML
+    private Label currentForm_label;
+
+     @FXML
+    private TextField take_BookTitle;
+
+    @FXML
+    private TextField take_FirstName;
+
+    @FXML
+    private ComboBox<?> take_Gender;
+
+    @FXML
+    private TextField take_LastName;
+
+    @FXML
+    private Label take_StudentNumber;
+
+    @FXML
+    private Label take_authorLabel;
+
+    @FXML
+    private Button take_clearBtn;
+
+    @FXML
+    private Label take_dateLabel;
+
+    @FXML
+    private Label take_genreLabel;
+
+    @FXML
+    private ImageView take_imageView;
+
+    @FXML
+    private Label take_issuedDate;
+
+    @FXML
+    private Button take_takeBtn;
+
+    @FXML
+    private Label take_titleLabel;
+
+    private Image image;
+
+    private Connection connect;
+    private PreparedStatement prepare;
+    private Statement statement;
+    private ResultSet result;
+
+    private String comboBox[] = {"Male", "Female", "Other"};
+
+    public void gender(){
+        List<String> combo = new ArrayList<>();
+        
+        for (String data : comboBox) {
+            combo.add(data);
+        }
+
+        ObservableList list = FXCollections.observableArrayList(combo);
+        take_Gender.setItems(list);
+    }
+
+
+    public void findBook(ActionEvent event) {
+
+        String sql = "SELECT * FROM book WHERE bookTitle = '" + take_BookTitle.getText() + "'";
+
+        connect = Database.connectDB();
+
+        try {
+
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+            boolean check = false;
+
+            Alert alert;
+
+            if (take_BookTitle.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Admin Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select the book.");
+                alert.showAndWait();
+
+            } else {
+
+                while (result.next()) {
+
+                    take_titleLabel.setText(result.getString("bookTitle"));
+                    take_authorLabel.setText(result.getString("author"));
+                    take_genreLabel.setText(result.getString("bookType"));
+                    take_dateLabel.setText(result.getString("date"));
+
+                    getData.path = result.getString("image");
+
+                    String uri = "file:" + getData.path;
+
+                    image = new Image(uri, 143, 200, false, true);
+                    take_imageView.setImage(image);
+
+                    check = true;
+                }
+
+                if (!check) {
+                    take_titleLabel.setText("Book is not available!");
+
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    //TO SHOW THE BOOKS DATA
+
+    public ObservableList<availableBooks> dataList() {
+
+        ObservableList<availableBooks> listBooks = FXCollections.observableArrayList();
+
+        String sql = "SELECT * FROM book";
+
+        connect = Database.connectDB();
+
+        try {
+
+            availableBooks aBooks;
+
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+
+            while (result.next()) {
+
+                aBooks = new availableBooks(result.getString("bookTitle"),
+                        result.getString("author"), result.getString("bookType"),
+                        result.getString("image"), result.getDate("date"));
+
+                listBooks.add(aBooks);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return listBooks;
+    }
+
+
+    //SHOWING BOOKS DATA
+    private ObservableList<availableBooks> listBook;
+
+    public void showAvailableBooks() {
+
+        listBook = dataList();
+
+        col_ab_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        col_ab_author.setCellValueFactory(new PropertyValueFactory<>("author"));
+        col_ab_bookType.setCellValueFactory(new PropertyValueFactory<>("genre"));
+        col_ab_publishedDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+        availableBooks_tableView.setItems(listBook);
+
+    }
+
+    public void selectAvailableBooks() {
+
+        availableBooks bookData  = availableBooks_tableView.getSelectionModel().getSelectedItem();
+        int num = availableBooks_tableView.getSelectionModel().getSelectedIndex();
+
+        if((num-1) < -1) {
+            return;
+        }
+         availableBooks_title.setText(bookData.getTitle());
+
+        String uri = "file:" + bookData.getImage();
+
+        image = new Image(uri, 150, 197, false, true);
+        availableBooks_imageView.setImage(image);
+
+    }
+
+    public void abTakeButton(ActionEvent event) {
+
+        if (event.getSource() == take_btn) {
+            issue_form.setVisible(true);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(false);
+        }
+
+    }
+
+    public void studentNumber() {
+
+        studentNumber_label.setText(getData.studentNumber);
+    }
+
+    public void sideNavButtonDesign(ActionEvent event) {
+
+        if (event.getSource() == halfNav_availableBtn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(true);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(false);
+
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            currentForm_label.setText("Available Books");
+
+        } else if (event.getSource() == halfNav_takeBtn) {
+
+            issue_form.setVisible(true);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(false);
+
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            currentForm_label.setText("Issue Books");
+
+        } else if (event.getSource() == halfNav_returnBtn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(true);
+
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            currentForm_label.setText("Return Books");
+
+            
+
+        } else if (event.getSource() == halfNav_saveBtn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(true);
+            returnBook_form.setVisible(false);
+
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            currentForm_label.setText("Saved Books");
+
+        }
+
+    }
+
+    public void navButtonDesign(ActionEvent event) {
+        if (event.getSource() == availableBooks_btn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(true);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(false);
+
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+
+            currentForm_label.setText("Available Books");
+
+        } else if (event.getSource() == issueBooks_btn) {
+
+            issue_form.setVisible(true);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(false);
+
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+             currentForm_label.setText("Issue Books");
+
+        } else if (event.getSource() == returnBooks_btn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(false);
+            returnBook_form.setVisible(true);
+
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+
+            currentForm_label.setText("Return Books");
+
+
+
+        } else if (event.getSource() == savedBooks_btn) {
+
+            issue_form.setVisible(false);
+            availableBooks_form.setVisible(false);
+            savedBook_form.setVisible(true);
+            returnBook_form.setVisible(false);
+
+            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+
+             currentForm_label.setText("Saved Books");
+        }
+        
+    }
+    
     private double x = 0;
     private double y = 0;
 
@@ -230,5 +631,12 @@ public void exit() {
     // @override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO Auto-generated method stub
+
+        //        TO SHOW THE AVAILABLE BOOKS
+        showAvailableBooks();
+
+        studentNumber();
+
+        gender();
     }
 }

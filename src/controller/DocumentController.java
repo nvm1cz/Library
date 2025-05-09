@@ -78,6 +78,8 @@ public class DocumentController implements Initializable {
                 alert.showAndWait();
             }else{
                 if(result.next()){
+
+                    getData.studentNumber = studentNumber.getText();
                     
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Admin Message");
