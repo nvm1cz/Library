@@ -216,8 +216,10 @@ public class DashBoardController implements Initializable {
         take_Gender.setItems(list);
     }
 
-
+  
     public void findBook(ActionEvent event) {
+
+         clearFindData();
 
         String sql = "SELECT * FROM book WHERE bookTitle = '" + take_BookTitle.getText() + "'";
 
@@ -268,6 +270,35 @@ public class DashBoardController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    public void studentNumberLabel() {
+        take_StudentNumber.setText(getData.studentNumber);
+    }
+
+     public void clearTakeData() {
+
+        take_BookTitle.setText("");
+        take_titleLabel.setText("");
+        take_authorLabel.setText("");
+        take_genreLabel.setText("");
+        take_dateLabel.setText("");
+        take_imageView.setImage(null);
+
+    }
+
+      public void clearFindData(){
+        take_titleLabel.setText("");
+        take_authorLabel.setText("");
+        take_genreLabel.setText("");
+        take_dateLabel.setText("");
+        take_imageView.setImage(null);
+    }
+
+    public void displayDate(){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String date = format.format(new java.util.Date());
+        take_issuedDate.setText(date);
+    }
     //TO SHOW THE BOOKS DATA
 
     public ObservableList<availableBooks> dataList() {
@@ -302,6 +333,67 @@ public class DashBoardController implements Initializable {
         return listBooks;
     }
 
+    public void takeBook() {
+
+        Date date = new Date();
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+
+        String sql = "INSERT INTO take VALUES (?,?,?,?,?,?,?,?)";
+
+        connect = Database.connectDB();
+
+        try {
+
+            Alert alert;
+
+            if (take_FirstName.getText().isEmpty()
+                    || take_LastName.getText().isEmpty()
+                    || take_Gender.getSelectionModel().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Admin Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please type complete Student Details");
+                alert.showAndWait();
+            } else if (take_titleLabel.getText().isEmpty()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Admin Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please indicate the book you want to take.");
+                alert.showAndWait();
+            } else {
+
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, take_StudentNumber.getText());
+                prepare.setString(2, take_FirstName.getText());
+                prepare.setString(3, take_LastName.getText());
+                prepare.setString(4, (String) take_Gender.getSelectionModel().getSelectedItem());
+                prepare.setString(5, take_titleLabel.getText());
+                // prepare.setString(6, take_authorLabel.getText());
+                // prepare.setString(7, take_genreLabel.getText());
+                prepare.setString(6, getData.path);
+                prepare.setDate(7, sqlDate);
+
+                String check = "Not Return";
+
+                prepare.setString(8, check);
+                prepare.executeUpdate();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Admin Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successful!y take the book!");
+                alert.showAndWait();
+
+                clearTakeData();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    
 
     //SHOWING BOOKS DATA
     private ObservableList<availableBooks> listBook;
@@ -636,6 +728,10 @@ public void exit() {
         showAvailableBooks();
 
         studentNumber();
+
+        studentNumberLabel();
+
+        displayDate();
 
         gender();
     }

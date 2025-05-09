@@ -165,7 +165,7 @@
                         <Separator layoutX="248.0" layoutY="39.0" orientation="VERTICAL" prefHeight="449.0" prefWidth="6.0" />
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="issue_form" layoutX="43.0" layoutY="95.0" prefHeight="529.3333333333334" prefWidth="772.6666666666666" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <AnchorPane fx:id="issue_form" layoutX="43.0" layoutY="95.0" prefHeight="529.3333333333334" prefWidth="772.6666666666666" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <AnchorPane layoutX="302.0" layoutY="17.0" prefHeight="496.0" prefWidth="456.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
@@ -197,7 +197,7 @@
                                     <Font name="Microsoft Sans Serif" size="18.0" />
                                  </font>
                               </Label>
-                              <ComboBox fx:id="take_Gender" layoutX="228.0" layoutY="216.0" onAction="#gender" prefHeight="25.0" prefWidth="139.0" styleClass="textfield_take" stylesheets="@designDashboard.css" />
+                              <ComboBox fx:id="take_Gender" layoutX="228.0" layoutY="216.0" onAction="#gender" prefHeight="25.0" prefWidth="139.0" promptText="Choose..." styleClass="textfield_take" stylesheets="@designDashboard.css" />
                               <Label layoutX="14.0" layoutY="286.0" text="Book Details:" textFill="#4386b5">
                                  <font>
                                     <Font name="Berlin Sans FB" size="30.0" />
@@ -252,14 +252,47 @@
                                     <Label fx:id="take_dateLabel" layoutX="112.0" layoutY="94.0" text="Label" AnchorPane.bottomAnchor="37.0" AnchorPane.leftAnchor="112.0" />
                                  </children>
                               </AnchorPane>
-                              <Button fx:id="take_clearBtn" layoutX="14.0" layoutY="414.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="89.0" styleClass="clear-btn" stylesheets="@designDashboard.css" text="Clear" />
-                              <Button fx:id="take_takeBtn" layoutX="147.0" layoutY="414.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="89.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />
+                              <Button fx:id="take_clearBtn" layoutX="14.0" layoutY="414.0" mnemonicParsing="false" onAction="#clearTakeData" prefHeight="45.0" prefWidth="89.0" styleClass="clear-btn" stylesheets="@designDashboard.css" text="Clear" />
+                              <Button fx:id="take_takeBtn" layoutX="147.0" layoutY="414.0" mnemonicParsing="false" onAction="#takeBook" prefHeight="45.0" prefWidth="89.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />
                            </children>
                         </AnchorPane>
                         <Separator layoutX="287.0" layoutY="34.0" orientation="VERTICAL" prefHeight="461.0" prefWidth="6.0" />
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="returnBook_form" prefHeight="529.3333333333334" prefWidth="772.6666666666666" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <AnchorPane fx:id="returnBook_form" prefHeight="529.3333333333334" prefWidth="772.6666666666666" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <AnchorPane layoutX="313.0" layoutY="16.0" prefHeight="497.0" prefWidth="445.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                           <children>
+                              <Label layoutX="14.0" layoutY="14.0" text="Issued Books:" textFill="#316480">
+                                 <font>
+                                    <Font name="Berlin Sans FB" size="20.0" />
+                                 </font>
+                              </Label>
+                              <TableView layoutX="9.0" layoutY="45.0" prefHeight="437.0" prefWidth="429.0">
+                                <columns>
+                                  <TableColumn prefWidth="237.99996948242188" text="Book Title" />
+                                    <TableColumn prefWidth="191.3333740234375" text="Date Issued" />
+                                </columns>
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane layoutX="23.0" layoutY="16.0" prefHeight="497.0" prefWidth="273.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                           <children>
+                              <AnchorPane layoutX="59.0" layoutY="23.0" prefHeight="199.0" prefWidth="149.0" styleClass="image-card" stylesheets="@designDashboard.css">
+                                 <children>
+                                    <ImageView fitHeight="199.0" fitWidth="149.0" layoutX="3.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" />
+                                 </children>
+                              </AnchorPane>
+                              <Button layoutX="85.0" layoutY="283.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="103.0" styleClass="return-btn" stylesheets="@designDashboard.css" text="Return">
+                                 <font>
+                                    <Font name="Microsoft Sans Serif" size="12.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                        </AnchorPane>
+                        <Separator layoutX="303.0" layoutY="35.0" orientation="VERTICAL" prefHeight="460.0" prefWidth="4.0" />
+                     </children>
+                  </AnchorPane>
                   <AnchorPane fx:id="savedBook_form" layoutX="213.0" layoutY="114.0" prefHeight="529.3333333333334" prefWidth="772.6666666666666" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
