@@ -34,3 +34,10 @@ CREATE TABLE take (
     date DATE DEFAULT NULL,
     checkReturn VARCHAR(100) NOT NULL
 );
+
+CREATE TABLE admin (
+    username VARCHAR(100) NOT NULL PRIMARY KEY,
+    password VARCHAR(100) NOT NULL
+);
+
+INSERT INTO admin (username, password) VALUES ('admin', 'admin123');

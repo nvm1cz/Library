@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
-import java.sql.Statement;
 
 import dao.Database;
 import javafx.event.ActionEvent;
@@ -17,35 +16,22 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class DocumentController implements Initializable {
-
-    private Connection connect;
-    private PreparedStatement prepare;
-    private Statement statement;
-    private ResultSet result;
-
-    private double x = 0;
-    private double y = 0;
-    
-    
-
+public class AdminLoginController implements Initializable {
 
     @FXML
-    private TextField studentNumber;
+    private TextField username;
 
     @FXML
     private PasswordField password;
 
     @FXML
-    private Button login_Btn;
+    private Button loginBtn;
 
     @FXML
     private Button close;
@@ -53,89 +39,80 @@ public class DocumentController implements Initializable {
     @FXML
     private Button minimize;
 
-    @FXML
-    private Button adminLoginBtn;
-    
-    
-    public void login(){
-        
-        String sql = "SELECT * FROM students WHERE studentNumber = ? and password = ?";
+    private Connection connect;
+    private PreparedStatement prepare;
+    private ResultSet result;
+
+    private double x = 0;
+    private double y = 0;
+
+    public void login() {
+        String sql = "SELECT * FROM admin WHERE username = ? and password = ?";
         
         connect = Database.connectDB();
         
-        try{
-            
+        try {
             prepare = connect.prepareStatement(sql);
-            prepare.setString(1, studentNumber.getText());
+            prepare.setString(1, username.getText());
             prepare.setString(2, password.getText());
             result = prepare.executeQuery();
             
             Alert alert;
             
-            if(studentNumber.getText().isEmpty() || password.getText().isEmpty()){
-                
+            if (username.getText().isEmpty() || password.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Admin Message");
+                alert.setTitle("Error");
                 alert.setHeaderText(null);
                 alert.setContentText("Please fill all blank fields.");
                 alert.showAndWait();
-            }else{
-                if(result.next()){
-
-                    getData.studentNumber = studentNumber.getText();
-                    
+            } else {
+                if (result.next()) {
                     alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Admin Message");
+                    alert.setTitle("Success");
                     alert.setHeaderText(null);
-                    alert.setContentText("Successfully Login!");
+                    alert.setContentText("Successfully logged in as admin!");
                     alert.showAndWait();
                     
-//                    TO HIDE THE LOGIN FORM
-                    login_Btn.getScene().getWindow().hide();
+                    // Hide login form
+                    loginBtn.getScene().getWindow().hide();
                     
-//                    FOR DASHBOARD
-                    Parent root = FXMLLoader.load(getClass().getResource("/view/dashboard.fxml"));
-                    
+                    // Load admin dashboard
+                    Parent root = FXMLLoader.load(getClass().getResource("/view/adminDashboard.fxml"));
                     Stage stage = new Stage();
-                    
                     Scene scene = new Scene(root);
                     
-                    root.setOnMousePressed((MouseEvent event) ->{
-                        
+                    root.setOnMousePressed((MouseEvent event) -> {
                         x = event.getSceneX();
                         y = event.getSceneY();
-                        
                     });
                     
-                    root.setOnMouseDragged((MouseEvent event) ->{
-                       
+                    root.setOnMouseDragged((MouseEvent event) -> {
                         stage.setX(event.getScreenX() - x);
                         stage.setY(event.getScreenY() - y);
-                        
                     });
                     
                     stage.initStyle(StageStyle.TRANSPARENT);
-                    
                     stage.setScene(scene);
                     stage.show();
                     
-                }else{
+                } else {
                     alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Admin Message");
+                    alert.setTitle("Error");
                     alert.setHeaderText(null);
                     alert.setContentText("Wrong Username or Password.");
                     alert.showAndWait();
                 }
             }
             
-        }catch(Exception e){e.printStackTrace();}
-        
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void switchToAdminLogin() {
+    public void switchToStudentLogin() {
         try {
-            login_Btn.getScene().getWindow().hide();
-            Parent root = FXMLLoader.load(getClass().getResource("/view/adminLogin.fxml"));
+            loginBtn.getScene().getWindow().hide();
+            Parent root = FXMLLoader.load(getClass().getResource("/view/document.fxml"));
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             
@@ -159,18 +136,18 @@ public class DocumentController implements Initializable {
     }
 
     @FXML
-    public void minimize(){
-        Stage stage = (Stage)minimize.getScene().getWindow();
+    public void minimize() {
+        Stage stage = (Stage) minimize.getScene().getWindow();
         stage.setIconified(true);
     }
     
     @FXML
-    public void exit(){
+    public void exit() {
         System.exit(0);
     }
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-
+    public void initialize(URL url, ResourceBundle rb) {
+        // Initialization code if needed
     }
-}
+} 
