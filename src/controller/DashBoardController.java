@@ -218,42 +218,35 @@ public class DashBoardController implements Initializable {
 
   
     public void findBook(ActionEvent event) {
+        clearFindData();
 
-         clearFindData();
-
-        String sql = "SELECT * FROM book WHERE bookTitle = '" + take_BookTitle.getText() + "'";
+        String sql = "SELECT * FROM book WHERE bookTitle = ? AND quantity > 0";
 
         connect = Database.connectDB();
 
         try {
-
             prepare = connect.prepareStatement(sql);
+            prepare.setString(1, take_BookTitle.getText());
             result = prepare.executeQuery();
             boolean check = false;
 
             Alert alert;
 
             if (take_BookTitle.getText().isEmpty()) {
-
                 alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Admin Message");
+                alert.setTitle("Error Message");
                 alert.setHeaderText(null);
-                alert.setContentText("Please select the book.");
+                alert.setContentText("Please enter a book title.");
                 alert.showAndWait();
-
             } else {
-
                 while (result.next()) {
-
                     take_titleLabel.setText(result.getString("bookTitle"));
                     take_authorLabel.setText(result.getString("author"));
                     take_genreLabel.setText(result.getString("bookType"));
                     take_dateLabel.setText(result.getString("date"));
 
                     getData.path = result.getString("image");
-
                     String uri = "file:" + getData.path;
-
                     image = new Image(uri, 143, 200, false, true);
                     take_imageView.setImage(image);
 
@@ -262,10 +255,8 @@ public class DashBoardController implements Initializable {
 
                 if (!check) {
                     take_titleLabel.setText("Book is not available!");
-
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -334,16 +325,15 @@ public class DashBoardController implements Initializable {
     }
 
     public void takeBook() {
-
         Date date = new Date();
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
         String sql = "INSERT INTO take VALUES (?,?,?,?,?,?,?,?)";
+        String updateQuantitySql = "UPDATE book SET quantity = quantity - 1 WHERE bookTitle = ? AND quantity > 0";
 
         connect = Database.connectDB();
 
         try {
-
             Alert alert;
 
             if (take_FirstName.getText().isEmpty()
@@ -362,36 +352,48 @@ public class DashBoardController implements Initializable {
                 alert.setContentText("Please indicate the book you want to take.");
                 alert.showAndWait();
             } else {
+                // Check if book is available (quantity > 0)
+                String checkSql = "SELECT quantity FROM book WHERE bookTitle = ?";
+                prepare = connect.prepareStatement(checkSql);
+                prepare.setString(1, take_titleLabel.getText());
+                result = prepare.executeQuery();
 
-                prepare = connect.prepareStatement(sql);
-                prepare.setString(1, take_StudentNumber.getText());
-                prepare.setString(2, take_FirstName.getText());
-                prepare.setString(3, take_LastName.getText());
-                prepare.setString(4, (String) take_Gender.getSelectionModel().getSelectedItem());
-                prepare.setString(5, take_titleLabel.getText());
-                // prepare.setString(6, take_authorLabel.getText());
-                // prepare.setString(7, take_genreLabel.getText());
-                prepare.setString(6, getData.path);
-                prepare.setDate(7, sqlDate);
+                if (result.next() && result.getInt("quantity") > 0) {
+                    // Update book quantity
+                    prepare = connect.prepareStatement(updateQuantitySql);
+                    prepare.setString(1, take_titleLabel.getText());
+                    prepare.executeUpdate();
 
-                String check = "Not Return";
+                    // Insert into take table
+                    prepare = connect.prepareStatement(sql);
+                    prepare.setString(1, take_StudentNumber.getText());
+                    prepare.setString(2, take_FirstName.getText());
+                    prepare.setString(3, take_LastName.getText());
+                    prepare.setString(4, (String) take_Gender.getSelectionModel().getSelectedItem());
+                    prepare.setString(5, take_titleLabel.getText());
+                    prepare.setString(6, getData.path);
+                    prepare.setDate(7, sqlDate);
+                    prepare.setString(8, "Not Return");
+                    prepare.executeUpdate();
 
-                prepare.setString(8, check);
-                prepare.executeUpdate();
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Success Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Successfully borrowed the book!");
+                    alert.showAndWait();
 
-                alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Admin Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Successful!y take the book!");
-                alert.showAndWait();
-
-                clearTakeData();
-
+                    clearTakeData();
+                } else {
+                    alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book is not available for borrowing.");
+                    alert.showAndWait();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
     
 

@@ -76,6 +76,9 @@ public class AdminDashboardController implements Initializable {
     private TableColumn<availableBooks, String> col_publishedDate;
 
     @FXML
+    private TableColumn<availableBooks, String> col_quantity;
+
+    @FXML
     private AnchorPane manageStudents_form;
 
     @FXML
@@ -124,6 +127,9 @@ public class AdminDashboardController implements Initializable {
     private DatePicker book_date;
 
     @FXML
+    private TextField book_quantity;
+
+    @FXML
     private Button addBook_btn;
 
     @FXML
@@ -131,6 +137,9 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private Button clearBook_btn;
+
+    @FXML
+    private TextField delete_quantity;
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -164,7 +173,7 @@ public class AdminDashboardController implements Initializable {
 
     public ObservableList<availableBooks> booksList() {
         ObservableList<availableBooks> bookList = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM book";
+        String sql = "SELECT * FROM book WHERE quantity > 0";
         
         connect = Database.connectDB();
         
@@ -179,7 +188,8 @@ public class AdminDashboardController implements Initializable {
                         result.getString("bookTitle"),
                         result.getString("author"),
                         result.getString("bookType"),
-                        result.getString("date")
+                        result.getString("date"),
+                        result.getInt("quantity")
                 );
                 bookList.add(books);
             }
@@ -198,6 +208,7 @@ public class AdminDashboardController implements Initializable {
         col_author.setCellValueFactory(new PropertyValueFactory<>("author"));
         col_bookType.setCellValueFactory(new PropertyValueFactory<>("genre"));
         col_publishedDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        col_quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         
         books_tableView.setItems(listBooks);
     }
@@ -318,7 +329,8 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void addBook() {
-        String sql = "INSERT INTO book (bookTitle, author, bookType, date) VALUES (?, ?, ?, ?)";
+        String insertSql = "INSERT INTO book (bookTitle, author, bookType, date, quantity) VALUES (?, ?, ?, ?, ?)";
+        String updateSql = "UPDATE book SET quantity = quantity + ? WHERE bookTitle = ?";
         
         connect = Database.connectDB();
         
@@ -327,12 +339,34 @@ public class AdminDashboardController implements Initializable {
             if (book_title.getText().isEmpty() || 
                 book_author.getText().isEmpty() || 
                 book_type.getText().isEmpty() || 
-                book_date.getValue() == null) {
+                book_date.getValue() == null ||
+                book_quantity.getText().isEmpty()) {
                 
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
                 alert.setContentText("Please fill all fields.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Validate quantity is a positive number
+            int quantity;
+            try {
+                quantity = Integer.parseInt(book_quantity.getText());
+                if (quantity <= 0) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Quantity must be a positive number.");
+                    alert.showAndWait();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Quantity must be a valid number.");
                 alert.showAndWait();
                 return;
             }
@@ -344,28 +378,33 @@ public class AdminDashboardController implements Initializable {
             result = prepare.executeQuery();
             
             if (result.next()) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error");
+                // Book exists - update quantity
+                prepare = connect.prepareStatement(updateSql);
+                prepare.setInt(1, quantity);
+                prepare.setString(2, book_title.getText());
+                prepare.executeUpdate();
+                
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success");
                 alert.setHeaderText(null);
-                alert.setContentText("Book already exists!");
+                alert.setContentText("Book quantity updated successfully!");
                 alert.showAndWait();
-                return;
+            } else {
+                // New book - insert
+                prepare = connect.prepareStatement(insertSql);
+                prepare.setString(1, book_title.getText());
+                prepare.setString(2, book_author.getText());
+                prepare.setString(3, book_type.getText());
+                prepare.setDate(4, Date.valueOf(book_date.getValue()));
+                prepare.setInt(5, quantity);
+                prepare.executeUpdate();
+                
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Book added successfully!");
+                alert.showAndWait();
             }
-            
-            // Add new book
-            prepare = connect.prepareStatement(sql);
-            prepare.setString(1, book_title.getText());
-            prepare.setString(2, book_author.getText());
-            prepare.setString(3, book_type.getText());
-            prepare.setDate(4, Date.valueOf(book_date.getValue()));
-            
-            prepare.executeUpdate();
-            
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText(null);
-            alert.setContentText("Book added successfully!");
-            alert.showAndWait();
             
             // Clear fields and refresh table
             clearBookFields();
@@ -377,7 +416,9 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void deleteBook() {
-        String sql = "DELETE FROM book WHERE bookTitle = ?";
+        String deleteSql = "DELETE FROM book WHERE bookTitle = ?";
+        String updateSql = "UPDATE book SET quantity = quantity - ? WHERE bookTitle = ?";
+        String checkSql = "SELECT quantity FROM book WHERE bookTitle = ?";
         
         connect = Database.connectDB();
         
@@ -393,29 +434,99 @@ public class AdminDashboardController implements Initializable {
                 alert.showAndWait();
                 return;
             }
-            
-            // Confirm deletion
-            Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
-            confirmAlert.setTitle("Confirm Delete");
-            confirmAlert.setHeaderText(null);
-            confirmAlert.setContentText("Are you sure you want to delete this book?");
-            
-            if (confirmAlert.showAndWait().get().getButtonData().isDefaultButton()) {
-                prepare = connect.prepareStatement(sql);
-                prepare.setString(1, selectedBook.getTitle());
-                prepare.executeUpdate();
+
+            // Validate delete quantity
+            int deleteQty;
+            try {
+                if (book_quantity.getText().isEmpty()) {
+                    // If no quantity specified, delete all
+                    Alert confirmAll = new Alert(AlertType.CONFIRMATION);
+                    confirmAll.setTitle("Confirm Delete All");
+                    confirmAll.setHeaderText(null);
+                    confirmAll.setContentText("No quantity specified. Do you want to delete all copies of this book?");
+                    
+                    if (confirmAll.showAndWait().get().getButtonData().isDefaultButton()) {
+                        prepare = connect.prepareStatement(deleteSql);
+                        prepare.setString(1, selectedBook.getTitle());
+                        prepare.executeUpdate();
+                        
+                        Alert alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Success");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Book deleted successfully!");
+                        alert.showAndWait();
+                        
+                        clearBookFields();
+                        showBooks();
+                        return;
+                    } else {
+                        return;
+                    }
+                }
                 
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Success");
+                deleteQty = Integer.parseInt(book_quantity.getText());
+                if (deleteQty <= 0) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Delete quantity must be a positive number.");
+                    alert.showAndWait();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
                 alert.setHeaderText(null);
-                alert.setContentText("Book deleted successfully!");
+                alert.setContentText("Please enter a valid number for delete quantity.");
                 alert.showAndWait();
-                
-                // Clear fields and refresh table
-                clearBookFields();
-                showBooks();
+                return;
             }
             
+            // Check current quantity
+            prepare = connect.prepareStatement(checkSql);
+            prepare.setString(1, selectedBook.getTitle());
+            result = prepare.executeQuery();
+            
+            if (result.next()) {
+                int currentQty = result.getInt("quantity");
+                if (deleteQty > currentQty) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Cannot delete more than current quantity (" + currentQty + ")");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                // Confirm deletion
+                Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Confirm Delete");
+                confirmAlert.setHeaderText(null);
+                confirmAlert.setContentText("Are you sure you want to delete " + deleteQty + " copies of this book?");
+                
+                if (confirmAlert.showAndWait().get().getButtonData().isDefaultButton()) {
+                    if (deleteQty == currentQty) {
+                        // Delete entire record if removing all copies
+                        prepare = connect.prepareStatement(deleteSql);
+                        prepare.setString(1, selectedBook.getTitle());
+                    } else {
+                        // Update quantity if removing partial copies
+                        prepare = connect.prepareStatement(updateSql);
+                        prepare.setInt(1, deleteQty);
+                        prepare.setString(2, selectedBook.getTitle());
+                    }
+                    prepare.executeUpdate();
+                    
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Success");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book quantity updated successfully!");
+                    alert.showAndWait();
+                    
+                    clearBookFields();
+                    showBooks();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -426,6 +537,7 @@ public class AdminDashboardController implements Initializable {
         book_author.setText("");
         book_type.setText("");
         book_date.setValue(null);
+        book_quantity.setText("");
         books_tableView.getSelectionModel().clearSelection();
     }
 
@@ -438,6 +550,7 @@ public class AdminDashboardController implements Initializable {
             book_author.setText(selectedBook.getAuthor());
             book_type.setText(selectedBook.getGenre());
             book_date.setValue(LocalDate.parse(selectedBook.getDate()));
+            book_quantity.setText(String.valueOf(selectedBook.getQuantity()));
         }
     }
 

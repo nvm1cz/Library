@@ -5,12 +5,14 @@ public class availableBooks {
     private String author;
     private String genre;
     private String date;
+    private int quantity;
 
-    public availableBooks(String title, String author, String genre, String date) {
+    public availableBooks(String title, String author, String genre, String date, int quantity) {
         this.title = title;
         this.author = author;
         this.genre = genre;
         this.date = date;
+        this.quantity = quantity;
     }
 
     public String getTitle() {
@@ -43,5 +45,13 @@ public class availableBooks {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 } 

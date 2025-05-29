@@ -67,20 +67,22 @@
                      <children>
                         <TableView fx:id="books_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
-                              <TableColumn fx:id="col_bookTitle" prefWidth="200.0" text="Book Title" />
-                              <TableColumn fx:id="col_author" prefWidth="200.0" text="Author" />
-                              <TableColumn fx:id="col_bookType" prefWidth="150.0" text="Book Type" />
-                              <TableColumn fx:id="col_publishedDate" prefWidth="187.0" text="Published Date" />
+                              <TableColumn fx:id="col_bookTitle" prefWidth="180.0" text="Book Title" />
+                              <TableColumn fx:id="col_author" prefWidth="180.0" text="Author" />
+                              <TableColumn fx:id="col_bookType" prefWidth="140.0" text="Book Type" />
+                              <TableColumn fx:id="col_publishedDate" prefWidth="140.0" text="Published Date" />
+                              <TableColumn fx:id="col_quantity" prefWidth="97.0" text="Quantity" />
                            </columns>
                         </TableView>
                         <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <TextField fx:id="book_title" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Book Title" styleClass="textfield" />
-                              <TextField fx:id="book_author" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Author" styleClass="textfield" />
-                              <TextField fx:id="book_type" layoutX="434.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Book Type" styleClass="textfield" />
-                              <DatePicker fx:id="book_date" layoutX="594.0" layoutY="14.0" prefHeight="30.0" prefWidth="130.0" promptText="Date" styleClass="textfield" />
+                              <TextField fx:id="book_title" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="160.0" promptText="Book Title" styleClass="textfield" />
+                              <TextField fx:id="book_author" layoutX="184.0" layoutY="14.0" prefHeight="30.0" prefWidth="160.0" promptText="Author" styleClass="textfield" />
+                              <TextField fx:id="book_type" layoutX="354.0" layoutY="14.0" prefHeight="30.0" prefWidth="140.0" promptText="Book Type" styleClass="textfield" />
+                              <DatePicker fx:id="book_date" layoutX="504.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="Date" styleClass="textfield" />
+                              <TextField fx:id="book_quantity" layoutX="634.0" layoutY="14.0" prefHeight="30.0" prefWidth="90.0" promptText="Quantity" styleClass="textfield" />
                               <Button fx:id="addBook_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBook" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Book" />
-                              <Button fx:id="deleteBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete Book" />
+                              <Button fx:id="deleteBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
                               <Button fx:id="clearBook_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
