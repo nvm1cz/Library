@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import java.sql.Statement;
 
 import dao.Database;
+import model.getData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -39,7 +40,7 @@ public class DocumentController implements Initializable {
 
 
     @FXML
-    private TextField studentNumber;
+    private TextField username;
 
     @FXML
     private PasswordField password;
@@ -58,78 +59,70 @@ public class DocumentController implements Initializable {
     
     
     public void login(){
-        
-        String sql = "SELECT * FROM students WHERE studentNumber = ? and password = ?";
+        String sql = "SELECT b.BorrowerID, b.FullName, u.Username, u.Password " +
+                    "FROM Borrower b " +
+                    "JOIN UserAccount u ON b.BorrowerID = u.BorrowerID " +
+                    "WHERE u.Username = ? AND u.Password = ?";
         
         connect = Database.connectDB();
         
         try{
-            
             prepare = connect.prepareStatement(sql);
-            prepare.setString(1, studentNumber.getText());
+            prepare.setString(1, username.getText());
             prepare.setString(2, password.getText());
             result = prepare.executeQuery();
             
             Alert alert;
             
-            if(studentNumber.getText().isEmpty() || password.getText().isEmpty()){
-                
+            if(username.getText().isEmpty() || password.getText().isEmpty()){
                 alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Admin Message");
+                alert.setTitle("Error");
                 alert.setHeaderText(null);
                 alert.setContentText("Please fill all blank fields.");
                 alert.showAndWait();
-            }else{
+            } else {
                 if(result.next()){
-
-                    getData.studentNumber = studentNumber.getText();
+                    getData.borrowerId = result.getString("BorrowerID");
+                    getData.borrowerName = result.getString("FullName");
                     
                     alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Admin Message");
+                    alert.setTitle("Information Message");
                     alert.setHeaderText(null);
                     alert.setContentText("Successfully Login!");
                     alert.showAndWait();
                     
-//                    TO HIDE THE LOGIN FORM
-                    login_Btn.getScene().getWindow().hide();
+                    username.getScene().getWindow().hide();
                     
-//                    FOR DASHBOARD
                     Parent root = FXMLLoader.load(getClass().getResource("/view/dashboard.fxml"));
-                    
                     Stage stage = new Stage();
-                    
                     Scene scene = new Scene(root);
                     
                     root.setOnMousePressed((MouseEvent event) ->{
-                        
                         x = event.getSceneX();
                         y = event.getSceneY();
-                        
                     });
                     
                     root.setOnMouseDragged((MouseEvent event) ->{
-                       
                         stage.setX(event.getScreenX() - x);
                         stage.setY(event.getScreenY() - y);
-                        
                     });
                     
                     stage.initStyle(StageStyle.TRANSPARENT);
-                    
                     stage.setScene(scene);
                     stage.show();
                     
-                }else{
+                } else {
                     alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Admin Message");
+                    alert.setTitle("Error");
                     alert.setHeaderText(null);
-                    alert.setContentText("Wrong Username or Password.");
+                    alert.setContentText("Wrong Username/Password!");
                     alert.showAndWait();
                 }
             }
             
-        }catch(Exception e){e.printStackTrace();}
-        
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void switchToAdminLogin() {

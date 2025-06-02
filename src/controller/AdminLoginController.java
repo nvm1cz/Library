@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.ResourceBundle;
 
 import dao.Database;
+import model.getData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,7 +48,7 @@ public class AdminLoginController implements Initializable {
     private double y = 0;
 
     public void login() {
-        String sql = "SELECT * FROM admin WHERE username = ? and password = ?";
+        String sql = "SELECT * FROM Admin WHERE Username = ? AND Password = ?";
         
         connect = Database.connectDB();
         
@@ -67,6 +68,9 @@ public class AdminLoginController implements Initializable {
                 alert.showAndWait();
             } else {
                 if (result.next()) {
+                    getData.adminId = result.getInt("AdminID");
+                    getData.adminName = result.getString("FullName");
+                    
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Success");
                     alert.setHeaderText(null);

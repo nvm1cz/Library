@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
@@ -45,8 +46,8 @@
                      </font>
                   </Label>
                   <Button fx:id="manageBooks_btn" layoutX="25.0" layoutY="180.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Books" />
-                  <Button fx:id="manageStudents_btn" layoutX="25.0" layoutY="230.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Students" />
-                  <Button fx:id="issuedBooks_btn" layoutX="25.0" layoutY="280.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Issued Books" />
+                  <Button fx:id="manageUsers_btn" layoutX="25.0" layoutY="230.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Users" />
+                  <Button fx:id="borrowRecords_btn" layoutX="25.0" layoutY="280.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Borrow Records" />
                   <Button fx:id="logout_btn" layoutX="25.0" layoutY="466.0" mnemonicParsing="false" onAction="#logout" prefHeight="35.0" prefWidth="35.0" styleClass="logout-btn" stylesheets="@designDashboard.css">
                      <graphic>
                         <FontAwesomeIcon fill="WHITE" glyphName="SIGN_OUT" size="1.5em" />
@@ -67,20 +68,18 @@
                      <children>
                         <TableView fx:id="books_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
-                              <TableColumn fx:id="col_bookTitle" prefWidth="180.0" text="Book Title" />
+                              <TableColumn fx:id="col_bookTitle" prefWidth="200.0" text="Title" />
                               <TableColumn fx:id="col_author" prefWidth="180.0" text="Author" />
-                              <TableColumn fx:id="col_bookType" prefWidth="140.0" text="Book Type" />
-                              <TableColumn fx:id="col_publishedDate" prefWidth="140.0" text="Published Date" />
-                              <TableColumn fx:id="col_quantity" prefWidth="97.0" text="Quantity" />
+                              <TableColumn fx:id="col_totalCopies" prefWidth="120.0" text="Total Copies" />
+                              <TableColumn fx:id="col_availableCopies" prefWidth="120.0" text="Available" />
+                              <TableColumn fx:id="col_totalBorrows" prefWidth="118.0" text="Total Borrows" />
                            </columns>
                         </TableView>
                         <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <TextField fx:id="book_title" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="160.0" promptText="Book Title" styleClass="textfield" />
-                              <TextField fx:id="book_author" layoutX="184.0" layoutY="14.0" prefHeight="30.0" prefWidth="160.0" promptText="Author" styleClass="textfield" />
-                              <TextField fx:id="book_type" layoutX="354.0" layoutY="14.0" prefHeight="30.0" prefWidth="140.0" promptText="Book Type" styleClass="textfield" />
-                              <DatePicker fx:id="book_date" layoutX="504.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="Date" styleClass="textfield" />
-                              <TextField fx:id="book_quantity" layoutX="634.0" layoutY="14.0" prefHeight="30.0" prefWidth="90.0" promptText="Quantity" styleClass="textfield" />
+                              <TextField fx:id="book_title" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Book Title" styleClass="textfield" />
+                              <TextField fx:id="book_author" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="180.0" promptText="Author" styleClass="textfield" />
+                              <TextField fx:id="book_totalCopies" layoutX="414.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="Total Copies" styleClass="textfield" />
                               <Button fx:id="addBook_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBook" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Book" />
                               <Button fx:id="deleteBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
                               <Button fx:id="clearBook_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
@@ -88,28 +87,52 @@
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="manageStudents_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="manageUsers_form" prefHeight="521.0" prefWidth="766.0" visible="false">
                      <children>
-                        <TableView fx:id="students_tableView" layoutX="14.0" layoutY="14.0" prefHeight="493.0" prefWidth="738.0">
+                        <TableView fx:id="users_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
-                              <TableColumn fx:id="col_studentNumber" prefWidth="369.0" text="Student Number" />
-                              <TableColumn fx:id="col_password" prefWidth="368.0" text="Password" />
+                              <TableColumn fx:id="col_accountId" prefWidth="80.0" text="Account ID" />
+                              <TableColumn fx:id="col_username" prefWidth="150.0" text="Username" />
+                              <TableColumn fx:id="col_password" prefWidth="150.0" text="Password" />
+                              <TableColumn fx:id="col_borrowerId" prefWidth="150.0" text="Borrower ID" />
+                              <TableColumn fx:id="col_borrowerName" prefWidth="208.0" text="Borrower Name" />
                            </columns>
                         </TableView>
+                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                           <children>
+                              <TextField fx:id="username_field" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Username" styleClass="textfield" />
+                              <TextField fx:id="password_field" layoutX="174.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Password" styleClass="textfield" />
+                              <ComboBox fx:id="borrower_field" layoutX="334.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Borrower" />
+                              <Button fx:id="addUser_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addUser" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add User" />
+                              <Button fx:id="updateUser_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#updateUser" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Update" />
+                              <Button fx:id="deleteUser_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteUser" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
+                              <Button fx:id="clearUser_btn" layoutX="344.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearUserFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                           </children>
+                        </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="issuedBooks_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="borrowRecords_form" prefHeight="521.0" prefWidth="766.0" visible="false">
                      <children>
-                        <TableView fx:id="issuedBooks_tableView" layoutX="14.0" layoutY="14.0" prefHeight="493.0" prefWidth="738.0">
+                        <TableView fx:id="borrow_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
-                              <TableColumn fx:id="col_issueStudentNumber" prefWidth="120.0" text="Student Number" />
-                              <TableColumn fx:id="col_issueFirstName" prefWidth="120.0" text="First Name" />
-                              <TableColumn fx:id="col_issueLastName" prefWidth="120.0" text="Last Name" />
-                              <TableColumn fx:id="col_issueBookTitle" prefWidth="150.0" text="Book Title" />
-                              <TableColumn fx:id="col_issueDate" prefWidth="120.0" text="Issue Date" />
-                              <TableColumn fx:id="col_issueStatus" prefWidth="107.0" text="Status" />
+                              <TableColumn fx:id="col_borrowId" prefWidth="70.0" text="ID" />
+                              <TableColumn fx:id="col_borrower" prefWidth="120.0" text="Borrower" />
+                              <TableColumn fx:id="col_book" prefWidth="200.0" text="Book" />
+                              <TableColumn fx:id="col_borrowDate" prefWidth="120.0" text="Borrow Date" />
+                              <TableColumn fx:id="col_returnDate" prefWidth="120.0" text="Return Date" />
+                              <TableColumn fx:id="col_status" prefWidth="108.0" text="Status" />
                            </columns>
                         </TableView>
+                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                           <children>
+                              <ComboBox fx:id="borrower_combo" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Borrower" />
+                              <ComboBox fx:id="book_combo" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Book" />
+                              <DatePicker fx:id="returnDate_picker" layoutX="434.0" layoutY="14.0" prefHeight="30.0" prefWidth="140.0" promptText="Return Date" />
+                              <Button fx:id="addBorrow_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBorrow" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Borrow" />
+                              <Button fx:id="returnBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Return Book" />
+                              <Button fx:id="clearBorrow_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                           </children>
+                        </AnchorPane>
                      </children>
                   </AnchorPane>
                </children>

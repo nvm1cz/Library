@@ -1,57 +1,67 @@
 package model;
 
 public class availableBooks {
+    private int bookId;
     private String title;
     private String author;
-    private String genre;
-    private String date;
-    private int quantity;
+    private int totalCopies;
+    private int availableCopies;
+    private int totalBorrows;
 
-    public availableBooks(String title, String author, String genre, String date, int quantity) {
+    public availableBooks(int bookId, String title, String author, int totalCopies, int availableCopies, int totalBorrows) {
+        this.bookId = bookId;
         this.title = title;
         this.author = author;
-        this.genre = genre;
-        this.date = date;
-        this.quantity = quantity;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
+        this.totalBorrows = totalBorrows;
+    }
+
+    public int getBookId() {
+        return bookId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getAuthor() {
         return author;
+    }
+
+    public int getTotalCopies() {
+        return totalCopies;
+    }
+
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public int getTotalBorrows() {
+        return totalBorrows;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public void setAuthor(String author) {
         this.author = author;
     }
 
-    public String getGenre() {
-        return genre;
+    public void setTotalCopies(int totalCopies) {
+        this.totalCopies = totalCopies;
     }
 
-    public void setGenre(String genre) {
-        this.genre = genre;
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void setTotalBorrows(int totalBorrows) {
+        this.totalBorrows = totalBorrows;
     }
 } 
