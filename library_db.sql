@@ -2,6 +2,8 @@ USE library_db;
 
 CREATE TABLE students (
     studentNumber VARCHAR(100) NOT NULL PRIMARY KEY,
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL
 );
 
@@ -18,7 +20,6 @@ CREATE TABLE take (
     studentNumber VARCHAR(100) NOT NULL,
     firstName VARCHAR(100) NOT NULL,
     lastName VARCHAR(100) NOT NULL,
-    gender VARCHAR(100) NOT NULL,
     bookTitle VARCHAR(100) NOT NULL,
     image VARCHAR(500) NOT NULL,
     date DATE DEFAULT NULL,
@@ -32,18 +33,18 @@ CREATE TABLE admin (
 
 INSERT INTO admin (username, password) VALUES ('admin', '123');
 
-INSERT INTO students (studentNumber, password) VALUES 
-('1', '1'),
-('2', '1'),
-('3', '1'),
-('4', '1'),
-('5', '1'),
-('6', '1'),
-('7', '1'),
-('8', '1'),
-('9', '1'),
-('10', '1'),
-('11', '1');
+INSERT INTO students (studentNumber, firstName, lastName, password) VALUES 
+('1', 'John', 'Doe', '1'),
+('2', 'Jane', 'Smith', '1'),
+('3', 'Mike', 'Johnson', '1'),
+('4', 'Sarah', 'Williams', '1'),
+('5', 'David', 'Brown', '1'),
+('6', 'Emily', 'Davis', '1'),
+('7', 'James', 'Miller', '1'),
+('8', 'Emma', 'Wilson', '1'),
+('9', 'Daniel', 'Taylor', '1'),
+('10', 'Sophia', 'Anderson', '1'),
+('11', 'Oliver', 'Thomas', '1');
 
 INSERT INTO book (bookTitle, author, bookType, image, date, quantity)
 VALUES 

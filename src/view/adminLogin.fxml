@@ -12,8 +12,8 @@
    <children>
       <AnchorPane layoutX="85.0" layoutY="68.0" prefHeight="333.0" prefWidth="522.0" styleClass="card-form" stylesheets="@designLogin.css">
          <children>
-            <FontAwesomeIcon glyphName="USER_SECRET" layoutX="231.0" layoutY="71.0" size="5em" fill="WHITE" />
-            <Label layoutX="186.0" layoutY="89.0" text="Admin Login" textFill="WHITE">
+            <FontAwesomeIcon fill="WHITE" glyphName="USER_SECRET" layoutX="231.0" layoutY="71.0" size="5em" />
+            <Label layoutX="176.0" layoutY="89.0" text="Admin Login" textFill="WHITE">
                <font>
                   <Font name="Berlin Sans FB" size="30.0" />
                </font>
@@ -35,4 +35,4 @@
          </graphic>
       </Button>
    </children>
-</AnchorPane> 
+</AnchorPane>

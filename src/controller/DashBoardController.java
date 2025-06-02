@@ -218,7 +218,7 @@ public class DashBoardController implements Initializable {
 
   
     public void findBook(ActionEvent event) {
-        clearFindData();
+         clearFindData();
 
         String sql = "SELECT * FROM book WHERE bookTitle = ? AND quantity > 0";
 
@@ -264,20 +264,29 @@ public class DashBoardController implements Initializable {
 
     public void studentNumberLabel() {
         take_StudentNumber.setText(getData.studentNumber);
+        take_FirstName.setText(getData.firstName);
+        take_LastName.setText(getData.lastName);
     }
 
-     public void clearTakeData() {
+    public void clearSelectedBookData() {
+        getData.selectedBookTitle = null;
+        getData.selectedBookAuthor = null;
+        getData.selectedBookGenre = null;
+        getData.selectedBookDate = null;
+        getData.selectedBookImage = null;
+    }
 
+    public void clearTakeData() {
         take_BookTitle.setText("");
         take_titleLabel.setText("");
         take_authorLabel.setText("");
         take_genreLabel.setText("");
         take_dateLabel.setText("");
         take_imageView.setImage(null);
-
+        clearSelectedBookData();
     }
 
-      public void clearFindData(){
+    public void clearFindData(){
         take_titleLabel.setText("");
         take_authorLabel.setText("");
         take_genreLabel.setText("");
@@ -328,7 +337,7 @@ public class DashBoardController implements Initializable {
         Date date = new Date();
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
-        String sql = "INSERT INTO take VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO take (studentNumber, firstName, lastName, bookTitle, image, date, checkReturn) VALUES (?,?,?,?,?,?,?)";
         String updateQuantitySql = "UPDATE book SET quantity = quantity - 1 WHERE bookTitle = ? AND quantity > 0";
 
         connect = Database.connectDB();
@@ -336,16 +345,13 @@ public class DashBoardController implements Initializable {
         try {
             Alert alert;
 
-            if (take_FirstName.getText().isEmpty()
-                    || take_LastName.getText().isEmpty()
-                    || take_Gender.getSelectionModel().isEmpty()) {
-
+            if (take_FirstName.getText().isEmpty() || take_LastName.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Admin Message");
                 alert.setHeaderText(null);
                 alert.setContentText("Please type complete Student Details");
                 alert.showAndWait();
-            } else if (take_titleLabel.getText().isEmpty()) {
+            } else if (take_titleLabel.getText().isEmpty() || take_titleLabel.getText().equals("Label")) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Admin Message");
                 alert.setHeaderText(null);
@@ -364,16 +370,15 @@ public class DashBoardController implements Initializable {
                     prepare.setString(1, take_titleLabel.getText());
                     prepare.executeUpdate();
 
-                    // Insert into take table
+                    // Insert into take table with all required information
                     prepare = connect.prepareStatement(sql);
                     prepare.setString(1, take_StudentNumber.getText());
                     prepare.setString(2, take_FirstName.getText());
                     prepare.setString(3, take_LastName.getText());
-                    prepare.setString(4, (String) take_Gender.getSelectionModel().getSelectedItem());
-                    prepare.setString(5, take_titleLabel.getText());
-                    prepare.setString(6, getData.path);
-                    prepare.setDate(7, sqlDate);
-                    prepare.setString(8, "Not Return");
+                    prepare.setString(4, take_titleLabel.getText());
+                    prepare.setString(5, getData.selectedBookImage);
+                    prepare.setDate(6, sqlDate);
+                    prepare.setString(7, "Not Return");
                     prepare.executeUpdate();
 
                     alert = new Alert(AlertType.INFORMATION);
@@ -382,7 +387,17 @@ public class DashBoardController implements Initializable {
                     alert.setContentText("Successfully borrowed the book!");
                     alert.showAndWait();
 
+                    // Clear the form and selected book data
                     clearTakeData();
+                    
+                    // Switch back to Available Books view
+                    availableBooks_form.setVisible(true);
+                    issue_form.setVisible(false);
+                    savedBook_form.setVisible(false);
+                    returnBook_form.setVisible(false);
+                    
+                    // Refresh the available books table
+                    showAvailableBooks();
                 } else {
                     alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Error Message");
@@ -414,31 +429,56 @@ public class DashBoardController implements Initializable {
     }
 
     public void selectAvailableBooks() {
-
-        availableBooks bookData  = availableBooks_tableView.getSelectionModel().getSelectedItem();
+        availableBooks bookData = availableBooks_tableView.getSelectionModel().getSelectedItem();
         int num = availableBooks_tableView.getSelectionModel().getSelectedIndex();
 
-        if((num-1) < -1) {
+        if ((num - 1) < -1) {
             return;
         }
-         availableBooks_title.setText(bookData.getTitle());
+        availableBooks_title.setText(bookData.getTitle());
 
         String uri = "file:" + bookData.getImage();
-
         image = new Image(uri, 150, 197, false, true);
         availableBooks_imageView.setImage(image);
 
+        // Store selected book data for later use
+        getData.selectedBookTitle = bookData.getTitle();
+        getData.selectedBookAuthor = bookData.getAuthor();
+        getData.selectedBookGenre = bookData.getGenre();
+        getData.selectedBookDate = bookData.getDate().toString();
+        getData.selectedBookImage = bookData.getImage();
     }
 
     public void abTakeButton(ActionEvent event) {
-
         if (event.getSource() == take_btn) {
+            // Check if a book is selected
+            if (getData.selectedBookTitle == null || getData.selectedBookTitle.isEmpty()) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a book first.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Switch to issue form
             issue_form.setVisible(true);
             availableBooks_form.setVisible(false);
             savedBook_form.setVisible(false);
             returnBook_form.setVisible(false);
-        }
 
+            // Auto-fill book information
+            take_BookTitle.setText(getData.selectedBookTitle);
+            take_titleLabel.setText(getData.selectedBookTitle);
+            take_authorLabel.setText(getData.selectedBookAuthor);
+            take_genreLabel.setText(getData.selectedBookGenre);
+            take_dateLabel.setText(getData.selectedBookDate);
+
+            // Set book image
+            String uri = "file:" + getData.selectedBookImage;
+            image = new Image(uri, 143, 200, false, true);
+            take_imageView.setImage(image);
+        }
     }
 
     public void studentNumber() {
@@ -735,6 +775,6 @@ public void exit() {
 
         displayDate();
 
-        gender();
+       
     }
 }

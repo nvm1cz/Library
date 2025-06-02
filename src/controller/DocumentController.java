@@ -55,6 +55,9 @@ public class DocumentController implements Initializable {
 
     @FXML
     private Button adminLoginBtn;
+
+    @FXML
+    private Button registerBtn;
     
     
     public void login(){
@@ -83,6 +86,8 @@ public class DocumentController implements Initializable {
                 if(result.next()){
 
                     getData.studentNumber = studentNumber.getText();
+                    getData.firstName = result.getString("firstName");
+                    getData.lastName = result.getString("lastName");
                     
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Admin Message");
@@ -167,6 +172,34 @@ public class DocumentController implements Initializable {
     @FXML
     public void exit(){
         System.exit(0);
+    }
+
+    public void switchToRegister() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/view/studentRegister.fxml"));
+            Stage stage = new Stage();
+            Scene scene = new Scene(root);
+            
+            root.setOnMousePressed((MouseEvent event) -> {
+                x = event.getSceneX();
+                y = event.getSceneY();
+            });
+            
+            root.setOnMouseDragged((MouseEvent event) -> {
+                stage.setX(event.getScreenX() - x);
+                stage.setY(event.getScreenY() - y);
+            });
+            
+            stage.initStyle(StageStyle.TRANSPARENT);
+            stage.setScene(scene);
+            stage.show();
+            
+            // Hide the login form
+            registerBtn.getScene().getWindow().hide();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
