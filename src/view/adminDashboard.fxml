@@ -48,6 +48,7 @@
                   <Button fx:id="manageBooks_btn" layoutX="25.0" layoutY="180.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Books" />
                   <Button fx:id="manageUsers_btn" layoutX="25.0" layoutY="230.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Users" />
                   <Button fx:id="borrowRecords_btn" layoutX="25.0" layoutY="280.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Borrow Records" />
+                  <Button fx:id="reservations_btn" layoutX="25.0" layoutY="330.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Reservations" />
                   <Button fx:id="logout_btn" layoutX="25.0" layoutY="466.0" mnemonicParsing="false" onAction="#logout" prefHeight="35.0" prefWidth="35.0" styleClass="logout-btn" stylesheets="@designDashboard.css">
                      <graphic>
                         <FontAwesomeIcon fill="WHITE" glyphName="SIGN_OUT" size="1.5em" />
@@ -102,7 +103,8 @@
                            <children>
                               <TextField fx:id="username_field" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Username" styleClass="textfield" />
                               <TextField fx:id="password_field" layoutX="174.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Password" styleClass="textfield" />
-                              <ComboBox fx:id="borrower_field" layoutX="334.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Borrower" />
+                              <ComboBox fx:id="userType_combo" layoutX="334.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="User Type" />
+                              <TextField fx:id="borrower_name" layoutX="464.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Borrower Name" styleClass="textfield" />
                               <Button fx:id="addUser_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addUser" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add User" />
                               <Button fx:id="updateUser_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#updateUser" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Update" />
                               <Button fx:id="deleteUser_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteUser" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
@@ -127,10 +129,29 @@
                            <children>
                               <ComboBox fx:id="borrower_combo" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Borrower" />
                               <ComboBox fx:id="book_combo" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Book" />
-                              <DatePicker fx:id="returnDate_picker" layoutX="434.0" layoutY="14.0" prefHeight="30.0" prefWidth="140.0" promptText="Return Date" />
                               <Button fx:id="addBorrow_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBorrow" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Borrow" />
                               <Button fx:id="returnBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Return Book" />
                               <Button fx:id="clearBorrow_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane fx:id="reservations_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                     <children>
+                        <TableView fx:id="reservations_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                           <columns>
+                              <TableColumn fx:id="col_reservationId" prefWidth="70.0" text="ID" />
+                              <TableColumn fx:id="col_reservationUser" prefWidth="150.0" text="User" />
+                              <TableColumn fx:id="col_reservationBook" prefWidth="200.0" text="Book" />
+                              <TableColumn fx:id="col_reservationDate" prefWidth="120.0" text="Date" />
+                              <TableColumn fx:id="col_reservationStatus" prefWidth="120.0" text="Status" />
+                           </columns>
+                        </TableView>
+                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                           <children>
+                              <ComboBox fx:id="reservation_status_combo" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Change Status" />
+                              <Button fx:id="updateReservation_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#updateReservationStatus" prefHeight="30.0" prefWidth="150.0" styleClass="update-btn" text="Update Status" />
+                              <Button fx:id="clearReservation_btn" layoutX="174.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>

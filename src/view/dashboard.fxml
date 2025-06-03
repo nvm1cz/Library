@@ -96,7 +96,17 @@
                               <Font name="Microsoft Sans Serif" size="20.0" />
                            </font>
                         </Label>
-                        <Label layoutX="12.0" layoutY="207.0" text="Student#:" textFill="WHITE">
+                        <Label layoutX="12.0" layoutY="207.0" text="User:" textFill="WHITE">
+                           <font>
+                              <Font name="Microsoft Sans Serif" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="140.0" layoutY="207.0" text="BID:" textFill="WHITE">
+                           <font>
+                              <Font name="Microsoft Sans Serif" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="borrowId_label" layoutX="170.0" layoutY="207.0" text="--" textFill="WHITE">
                            <font>
                               <Font name="Microsoft Sans Serif" size="12.0" />
                            </font>
@@ -128,12 +138,13 @@
                <children>
                   <AnchorPane fx:id="availableBooks_form" layoutX="14.0" layoutY="0.0" prefHeight="535.0" prefWidth="750.0">
                      <children>
-                        <TableView fx:id="availableBooks_tableView" layoutX="14.0" layoutY="14.0" onMouseClicked="#selectAvailableBooks" prefHeight="400.0" prefWidth="722.0">
+                        <TableView fx:id="availableBooks_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
-                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="180.0" text="Book Title" />
+                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="200.0" text="Title" />
                               <TableColumn fx:id="col_ab_author" prefWidth="180.0" text="Author" />
-                              <TableColumn fx:id="col_ab_bookType" prefWidth="180.0" text="Book Type" />
-                              <TableColumn fx:id="col_ab_publishedDate" prefWidth="180.0" text="Published Date" />
+                              <TableColumn fx:id="col_ab_totalCopies" prefWidth="120.0" text="Total Copies" />
+                              <TableColumn fx:id="col_ab_availableCopies" prefWidth="120.0" text="Available" />
+                              <TableColumn fx:id="col_ab_totalBorrows" prefWidth="118.0" text="Total Borrows" />
                            </columns>
                         </TableView>
                         <Button fx:id="take_btn" layoutX="14.0" layoutY="430.0" mnemonicParsing="false" onAction="#abTakeButton" prefHeight="40.0" prefWidth="100.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />
@@ -176,7 +187,7 @@
                                     <Font name="Microsoft Sans Serif" size="18.0" />
                                  </font>
                               </Label>
-                              <TextField fx:id="take_BookTitle" layoutX="228.0" layoutY="270.0" onAction="#findBook" prefHeight="25.0" prefWidth="170.0" styleClass="textfield_take" stylesheets="@designDashboard.css" />
+                              <TextField fx:id="take_BookTitle" layoutX="228.0" layoutY="270.0" prefHeight="25.0" prefWidth="170.0" styleClass="textfield_take" stylesheets="@designDashboard.css" />
                               <Label layoutX="38.0" layoutY="320.0" text="Issued Date:" AnchorPane.leftAnchor="42.0">
                                  <font>
                                     <Font name="Microsoft Sans Serif" size="18.0" />

@@ -15,6 +15,7 @@ import model.getData;
 import model.BorrowEntry;
 import model.availableBooks;
 import model.UserAccount;
+import model.Reservation;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -48,6 +49,9 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private Button borrowRecords_btn;
+
+    @FXML
+    private Button reservations_btn;
 
     @FXML
     private Button logout_btn;
@@ -105,6 +109,12 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private ComboBox<Borrower> borrower_field;
+
+    @FXML
+    private ComboBox<String> userType_combo;
+
+    @FXML
+    private TextField borrower_name;
 
     @FXML
     private Button addUser_btn;
@@ -173,9 +183,6 @@ public class AdminDashboardController implements Initializable {
     private ComboBox<availableBooks> book_combo;
 
     @FXML
-    private DatePicker returnDate_picker;
-
-    @FXML
     private Button addBorrow_btn;
 
     @FXML
@@ -183,6 +190,30 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private Button clearBorrow_btn;
+
+    @FXML
+    private AnchorPane reservations_form;
+
+    @FXML
+    private TableView<Reservation> reservations_tableView;
+
+    @FXML
+    private TableColumn<Reservation, Integer> col_reservationId;
+
+    @FXML
+    private TableColumn<Reservation, String> col_reservationUser;
+
+    @FXML
+    private TableColumn<Reservation, String> col_reservationBook;
+
+    @FXML
+    private TableColumn<Reservation, LocalDate> col_reservationDate;
+
+    @FXML
+    private TableColumn<Reservation, String> col_reservationStatus;
+
+    @FXML
+    private ComboBox<String> reservation_status_combo;
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -215,20 +246,30 @@ public class AdminDashboardController implements Initializable {
             manageBooks_form.setVisible(true);
             manageUsers_form.setVisible(false);
             borrowRecords_form.setVisible(false);
+            reservations_form.setVisible(false);
+            
             showBooks();
         } else if (event.getSource() == manageUsers_btn) {
             manageBooks_form.setVisible(false);
             manageUsers_form.setVisible(true);
             borrowRecords_form.setVisible(false);
+            reservations_form.setVisible(false);
+            
             showUsers();
-            loadAvailableBorrowers();
         } else if (event.getSource() == borrowRecords_btn) {
             manageBooks_form.setVisible(false);
             manageUsers_form.setVisible(false);
             borrowRecords_form.setVisible(true);
+            reservations_form.setVisible(false);
+            
             showBorrowRecords();
-            loadBorrowers();
-            loadAvailableBooks();
+        } else if (event.getSource() == reservations_btn) {
+            manageBooks_form.setVisible(false);
+            manageUsers_form.setVisible(false);
+            borrowRecords_form.setVisible(false);
+            reservations_form.setVisible(true);
+            
+            showReservations();
         }
     }
 
@@ -516,7 +557,6 @@ public class AdminDashboardController implements Initializable {
     public void clearBorrowFields() {
         borrower_combo.setValue(null);
         book_combo.setValue(null);
-        returnDate_picker.setValue(null);
         borrow_tableView.getSelectionModel().clearSelection();
     }
 
@@ -717,11 +757,14 @@ public class AdminDashboardController implements Initializable {
     private void loadAvailableBorrowers() {
         String sql = "SELECT BorrowerID, FullName FROM Borrower " +
                     "WHERE BorrowerID NOT IN (SELECT BorrowerID FROM UserAccount WHERE BorrowerID IS NOT NULL) " +
+                    "AND IsStudent = ? " +
                     "ORDER BY FullName";
         connect = Database.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
+            String selectedType = userType_combo.getValue();
+            prepare.setBoolean(1, selectedType != null && selectedType.equals("SV"));
             result = prepare.executeQuery();
             
             ObservableList<Borrower> borrowers = FXCollections.observableArrayList();
@@ -737,19 +780,32 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
+    private void setupUserTypeComboBox() {
+        userType_combo.setItems(FXCollections.observableArrayList("SV", "ND"));
+        userType_combo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                loadAvailableBorrowers();
+            }
+        });
+    }
+
     public void addUser() {
         String sql = "INSERT INTO UserAccount (Username, Password, BorrowerID) VALUES (?, ?, ?)";
+        String sqlBorrower = "INSERT INTO Borrower (BorrowerID, FullName, IsStudent, StudentCode) VALUES (?, ?, ?, ?)";
         
         connect = Database.connectDB();
         
         try {
             Alert alert;
             
-            if (username_field.getText().isEmpty() || password_field.getText().isEmpty()) {
+            if (username_field.getText().isEmpty() || 
+                password_field.getText().isEmpty() || 
+                userType_combo.getValue() == null ||
+                borrower_name.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
-                alert.setContentText("Please fill all required fields");
+                alert.setContentText("Please fill all required fields and select user type");
                 alert.showAndWait();
                 return;
             }
@@ -769,25 +825,54 @@ public class AdminDashboardController implements Initializable {
                 return;
             }
 
-            // Add new user
-            prepare = connect.prepareStatement(sql);
-            prepare.setString(1, username_field.getText());
-            prepare.setString(2, password_field.getText());
-            prepare.setString(3, borrower_field.getValue() != null ? borrower_field.getValue().getId() : null);
-            prepare.executeUpdate();
+            connect.setAutoCommit(false);
+            try {
+                // Create new borrower
+                boolean isStudent = userType_combo.getValue().equals("SV");
+                String borrowerId = (isStudent ? "SV" : "ND") + System.currentTimeMillis();
+                
+                prepare = connect.prepareStatement(sqlBorrower);
+                prepare.setString(1, borrowerId);
+                prepare.setString(2, borrower_name.getText());
+                prepare.setBoolean(3, isStudent);
+                prepare.setString(4, isStudent ? borrowerId : null);
+                prepare.executeUpdate();
 
-            alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Success Message");
-            alert.setHeaderText(null);
-            alert.setContentText("Successfully added user!");
-            alert.showAndWait();
+                // Add new user
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, username_field.getText());
+                prepare.setString(2, password_field.getText());
+                prepare.setString(3, borrowerId);
+                prepare.executeUpdate();
 
-            showUsers();
-            loadAvailableBorrowers();
-            clearUserFields();
+                connect.commit();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully added user!");
+                alert.showAndWait();
+
+                showUsers();
+                clearUserFields();
+            } catch (Exception e) {
+                connect.rollback();
+                throw e;
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error occurred while adding user");
+            alert.showAndWait();
+        } finally {
+            try {
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -906,7 +991,8 @@ public class AdminDashboardController implements Initializable {
     public void clearUserFields() {
         username_field.setText("");
         password_field.setText("");
-        borrower_field.setValue(null);
+        userType_combo.setValue(null);
+        borrower_name.setText("");
         users_tableView.getSelectionModel().clearSelection();
     }
 
@@ -916,35 +1002,226 @@ public class AdminDashboardController implements Initializable {
             if (newSelection != null) {
                 username_field.setText(newSelection.getUsername());
                 password_field.setText(newSelection.getPassword());
-                
-                // Find and select the matching borrower in the combo box
-                if (newSelection.getBorrowerId() != null) {
-                    for (Borrower borrower : borrower_field.getItems()) {
-                        if (borrower.getId().equals(newSelection.getBorrowerId())) {
-                            borrower_field.setValue(borrower);
-                            break;
-                        }
-                    }
-                } else {
-                    borrower_field.setValue(null);
-                }
+                borrower_name.setText(newSelection.getBorrowerName());
             }
         });
+    }
+
+    public ObservableList<Reservation> reservationsList() {
+        ObservableList<Reservation> listReservations = FXCollections.observableArrayList();
+        String sql = "SELECT r.ReservationID, ua.Username, b.Title, r.ReservationDate, r.Status " +
+                    "FROM Reservation r " +
+                    "JOIN UserAccount ua ON r.AccountID = ua.AccountID " +
+                    "JOIN Book b ON r.BookID = b.BookID " +
+                    "ORDER BY r.ReservationDate DESC";
+        
+        connect = Database.connectDB();
+        
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+            
+            while (result.next()) {
+                Reservation reservation = new Reservation(
+                    result.getInt("ReservationID"),
+                    result.getString("Username"),
+                    result.getString("Title"),
+                    result.getDate("ReservationDate").toLocalDate(),
+                    result.getString("Status")
+                );
+                listReservations.add(reservation);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return listReservations;
+    }
+
+    public void showReservations() {
+        ObservableList<Reservation> listReservations = reservationsList();
+        
+        col_reservationId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        col_reservationUser.setCellValueFactory(new PropertyValueFactory<>("username"));
+        col_reservationBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+        col_reservationDate.setCellValueFactory(new PropertyValueFactory<>("reservationDate"));
+        col_reservationStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        
+        reservations_tableView.setItems(listReservations);
+        setupReservationStatusComboBox();
+    }
+
+    private void setupReservationStatusComboBox() {
+        reservation_status_combo.setItems(FXCollections.observableArrayList(
+            "Pending", "Fulfilled", "Canceled"
+        ));
+    }
+
+    @FXML
+    public void updateReservationStatus() {
+        Reservation selectedReservation = reservations_tableView.getSelectionModel().getSelectedItem();
+        String newStatus = reservation_status_combo.getValue();
+        
+        if (selectedReservation == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a reservation to update");
+            alert.showAndWait();
+            return;
+        }
+        
+        if (newStatus == null || newStatus.isEmpty()) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a status");
+            alert.showAndWait();
+            return;
+        }
+
+        // Check if book is available when fulfilling
+        if (newStatus.equals("Fulfilled")) {
+            String checkBook = "SELECT BookID, AvailableCopies FROM Book WHERE Title = ?";
+            String checkBorrower = "SELECT b.BorrowerID FROM UserAccount ua " +
+                                 "JOIN Borrower b ON ua.BorrowerID = b.BorrowerID " +
+                                 "WHERE ua.Username = ?";
+            
+            connect = Database.connectDB();
+            try {
+                // Get BookID and check availability
+                prepare = connect.prepareStatement(checkBook);
+                prepare.setString(1, selectedReservation.getBookTitle());
+                result = prepare.executeQuery();
+                
+                if (!result.next() || result.getInt("AvailableCopies") <= 0) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book is not available for borrowing");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                int bookId = result.getInt("BookID");
+
+                // Get BorrowerID
+                prepare = connect.prepareStatement(checkBorrower);
+                prepare.setString(1, selectedReservation.getUsername());
+                result = prepare.executeQuery();
+                
+                if (!result.next()) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Cannot find borrower information");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                String borrowerId = result.getString("BorrowerID");
+                
+                // Start transaction
+                connect.setAutoCommit(false);
+                try {
+                    // 1. Update reservation status
+                    String updateReservation = "UPDATE Reservation SET Status = ? WHERE ReservationID = ?";
+                    prepare = connect.prepareStatement(updateReservation);
+                    prepare.setString(1, newStatus);
+                    prepare.setInt(2, selectedReservation.getId());
+                    prepare.executeUpdate();
+
+                    // 2. Create borrow entry
+                    String createBorrow = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, ?, ?)";
+                    prepare = connect.prepareStatement(createBorrow);
+                    prepare.setString(1, borrowerId);
+                    prepare.setInt(2, bookId);
+                    prepare.setDate(3, Date.valueOf(LocalDate.now()));
+                    prepare.setInt(4, getData.adminId);
+                    prepare.executeUpdate();
+
+                    // 3. Update book available copies
+                    String updateBook = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ?";
+                    prepare = connect.prepareStatement(updateBook);
+                    prepare.setInt(1, bookId);
+                    prepare.executeUpdate();
+
+                    connect.commit();
+
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Success");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Reservation fulfilled and borrow record created successfully!");
+                    alert.showAndWait();
+
+                    showReservations();
+                    showBorrowRecords();
+                    clearReservationFields();
+
+                } catch (Exception e) {
+                    connect.rollback();
+                    throw e;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Error occurred while processing the reservation");
+                alert.showAndWait();
+            } finally {
+                try {
+                    connect.setAutoCommit(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // Just update status for non-Fulfilled statuses
+            String sql = "UPDATE Reservation SET Status = ? WHERE ReservationID = ?";
+            connect = Database.connectDB();
+            
+            try {
+                Alert alert;
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, newStatus);
+                prepare.setInt(2, selectedReservation.getId());
+                
+                prepare.executeUpdate();
+                
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Reservation status updated successfully!");
+                alert.showAndWait();
+                
+                showReservations();
+                clearReservationFields();
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    public void clearReservationFields() {
+        reservation_status_combo.setValue(null);
+        reservations_tableView.getSelectionModel().clearSelection();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         showBooks();
+        showUsers();
+        showBorrowRecords();
+        showReservations();
+        
+        setupUserTypeComboBox();
         setupUserTableListener();
         
-        // Add selection listener to books table
-        books_tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                getData.bookId = newSelection.getBookId();
-                book_title.setText(newSelection.getTitle());
-                book_author.setText(newSelection.getAuthor());
-                book_totalCopies.setText(String.valueOf(newSelection.getTotalCopies()));
-            }
-        });
+        col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+        col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
     }
 } 

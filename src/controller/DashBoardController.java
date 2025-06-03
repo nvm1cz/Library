@@ -77,6 +77,9 @@ public class DashBoardController implements Initializable {
     private Label studentNumber_label;
 
     @FXML
+    private Label borrowId_label;
+
+    @FXML
     private Button availableBooks_btn;
 
     @FXML
@@ -107,10 +110,13 @@ public class DashBoardController implements Initializable {
     private TableColumn<availableBooks, String> col_ab_author;
 
     @FXML
-    private TableColumn<availableBooks, String> col_ab_bookType;
+    private TableColumn<availableBooks, Integer> col_ab_totalCopies;
 
     @FXML
-    private TableColumn<availableBooks, String> col_ab_publishedDate;
+    private TableColumn<availableBooks, Integer> col_ab_availableCopies;
+
+    @FXML
+    private TableColumn<availableBooks, Integer> col_ab_totalBorrows;
 
     @FXML
     private ImageView availableBooks_imageView;
@@ -164,9 +170,6 @@ public class DashBoardController implements Initializable {
     private TextField take_FirstName;
 
     @FXML
-    private ComboBox<?> take_Gender;
-
-    @FXML
     private TextField take_LastName;
 
     @FXML
@@ -203,67 +206,8 @@ public class DashBoardController implements Initializable {
     private Statement statement;
     private ResultSet result;
 
-    private String comboBox[] = {"Male", "Female", "Other"};
-
-    public void gender(){
-        List<String> combo = new ArrayList<>();
-        
-        for (String data : comboBox) {
-            combo.add(data);
-        }
-
-        ObservableList list = FXCollections.observableArrayList(combo);
-        take_Gender.setItems(list);
-    }
-
-  
-    public void findBook(ActionEvent event) {
-        clearFindData();
-
-        String sql = "SELECT * FROM book WHERE bookTitle = ? AND quantity > 0";
-
-        connect = Database.connectDB();
-
-        try {
-            prepare = connect.prepareStatement(sql);
-            prepare.setString(1, take_BookTitle.getText());
-            result = prepare.executeQuery();
-            boolean check = false;
-
-            Alert alert;
-
-            if (take_BookTitle.getText().isEmpty()) {
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Please enter a book title.");
-                alert.showAndWait();
-            } else {
-                while (result.next()) {
-                    take_titleLabel.setText(result.getString("bookTitle"));
-                    take_authorLabel.setText(result.getString("author"));
-                    take_genreLabel.setText(result.getString("bookType"));
-                    take_dateLabel.setText(result.getString("date"));
-
-                    getData.path = result.getString("image");
-                    String uri = "file:" + getData.path;
-                    image = new Image(uri, 143, 200, false, true);
-                    take_imageView.setImage(image);
-
-                    check = true;
-                }
-
-                if (!check) {
-                    take_titleLabel.setText("Book is not available!");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void studentNumberLabel() {
-        take_StudentNumber.setText(getData.studentNumber);
+        take_StudentNumber.setText(getData.studentCode);
     }
 
      public void clearTakeData() {
@@ -277,14 +221,6 @@ public class DashBoardController implements Initializable {
 
     }
 
-      public void clearFindData(){
-        take_titleLabel.setText("");
-        take_authorLabel.setText("");
-        take_genreLabel.setText("");
-        take_dateLabel.setText("");
-        take_imageView.setImage(null);
-    }
-
     public void displayDate(){
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String date = format.format(new java.util.Date());
@@ -293,43 +229,61 @@ public class DashBoardController implements Initializable {
     //TO SHOW THE BOOKS DATA
 
     public ObservableList<availableBooks> dataList() {
-
         ObservableList<availableBooks> listBooks = FXCollections.observableArrayList();
-
-        String sql = "SELECT * FROM book";
-
+        String sql = "SELECT * FROM Book WHERE AvailableCopies > 0";
+        
         connect = Database.connectDB();
-
+        
         try {
-
-            availableBooks aBooks;
-
             prepare = connect.prepareStatement(sql);
             result = prepare.executeQuery();
-
+            
             while (result.next()) {
-
-                aBooks = new availableBooks(result.getString("bookTitle"),
-                        result.getString("author"), result.getString("bookType"),
-                        result.getString("image"), result.getDate("date"));
-
-                listBooks.add(aBooks);
-
+                availableBooks book = new availableBooks(
+                    result.getInt("BookID"),
+                    result.getString("Title"),
+                    result.getString("Author"),
+                    result.getInt("TotalCopies"),
+                    result.getInt("AvailableCopies"),
+                    result.getInt("TotalBorrows")
+                );
+                listBooks.add(book);
             }
-
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
         return listBooks;
+    }
+
+    public void showAvailableBooks() {
+        ObservableList<availableBooks> listBooks = dataList();
+        
+        col_ab_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        col_ab_author.setCellValueFactory(new PropertyValueFactory<>("author"));
+        col_ab_totalCopies.setCellValueFactory(new PropertyValueFactory<>("totalCopies"));
+        col_ab_availableCopies.setCellValueFactory(new PropertyValueFactory<>("availableCopies"));
+        col_ab_totalBorrows.setCellValueFactory(new PropertyValueFactory<>("totalBorrows"));
+        
+        availableBooks_tableView.setItems(listBooks);
+    }
+
+    public void selectAvailableBooks() {
+        availableBooks bookData = availableBooks_tableView.getSelectionModel().getSelectedItem();
+        int num = availableBooks_tableView.getSelectionModel().getSelectedIndex();
+
+        if ((num - 1) < -1) {
+            return;
+        }
+        availableBooks_title.setText(bookData.getTitle());
     }
 
     public void takeBook() {
         Date date = new Date();
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
-        String sql = "INSERT INTO take VALUES (?,?,?,?,?,?,?,?)";
-        String updateQuantitySql = "UPDATE book SET quantity = quantity - 1 WHERE bookTitle = ? AND quantity > 0";
+        String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ? AND AvailableCopies > 0";
 
         connect = Database.connectDB();
 
@@ -337,8 +291,7 @@ public class DashBoardController implements Initializable {
             Alert alert;
 
             if (take_FirstName.getText().isEmpty()
-                    || take_LastName.getText().isEmpty()
-                    || take_Gender.getSelectionModel().isEmpty()) {
+                    || take_LastName.getText().isEmpty()) {
 
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Admin Message");
@@ -352,37 +305,35 @@ public class DashBoardController implements Initializable {
                 alert.setContentText("Please indicate the book you want to take.");
                 alert.showAndWait();
             } else {
-                // Check if book is available (quantity > 0)
-                String checkSql = "SELECT quantity FROM book WHERE bookTitle = ?";
+                // Check if book is available
+                String checkSql = "SELECT BookID, AvailableCopies FROM Book WHERE Title = ?";
                 prepare = connect.prepareStatement(checkSql);
                 prepare.setString(1, take_titleLabel.getText());
                 result = prepare.executeQuery();
 
-                if (result.next() && result.getInt("quantity") > 0) {
-                    // Update book quantity
-                    prepare = connect.prepareStatement(updateQuantitySql);
-                    prepare.setString(1, take_titleLabel.getText());
-                    prepare.executeUpdate();
+                if (result.next() && result.getInt("AvailableCopies") > 0) {
+                    int bookId = result.getInt("BookID");
 
-                    // Insert into take table
-                    prepare = connect.prepareStatement(sql);
-                    prepare.setString(1, take_StudentNumber.getText());
-                    prepare.setString(2, take_FirstName.getText());
-                    prepare.setString(3, take_LastName.getText());
-                    prepare.setString(4, (String) take_Gender.getSelectionModel().getSelectedItem());
-                    prepare.setString(5, take_titleLabel.getText());
-                    prepare.setString(6, getData.path);
-                    prepare.setDate(7, sqlDate);
-                    prepare.setString(8, "Not Return");
-                    prepare.executeUpdate();
+                    // Update book available copies
+                    prepare = connect.prepareStatement(updateBookSql);
+                    prepare.setInt(1, bookId);
+                    int updated = prepare.executeUpdate();
 
-                    alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Success Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully borrowed the book!");
-                    alert.showAndWait();
+                    if (updated > 0) {
+                        alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Success Message");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Successfully borrowed the book!");
+                        alert.showAndWait();
 
-                    clearTakeData();
+                        clearTakeData();
+                    } else {
+                        alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error Message");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Book is no longer available for borrowing.");
+                        alert.showAndWait();
+                    }
                 } else {
                     alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Error Message");
@@ -393,6 +344,11 @@ public class DashBoardController implements Initializable {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error occurred while processing your request: " + e.getMessage());
+            alert.showAndWait();
         }
     }
     
@@ -400,50 +356,114 @@ public class DashBoardController implements Initializable {
     //SHOWING BOOKS DATA
     private ObservableList<availableBooks> listBook;
 
-    public void showAvailableBooks() {
-
-        listBook = dataList();
-
-        col_ab_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        col_ab_author.setCellValueFactory(new PropertyValueFactory<>("author"));
-        col_ab_bookType.setCellValueFactory(new PropertyValueFactory<>("genre"));
-        col_ab_publishedDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        availableBooks_tableView.setItems(listBook);
-
-    }
-
-    public void selectAvailableBooks() {
-
-        availableBooks bookData  = availableBooks_tableView.getSelectionModel().getSelectedItem();
-        int num = availableBooks_tableView.getSelectionModel().getSelectedIndex();
-
-        if((num-1) < -1) {
-            return;
-        }
-         availableBooks_title.setText(bookData.getTitle());
-
-        String uri = "file:" + bookData.getImage();
-
-        image = new Image(uri, 150, 197, false, true);
-        availableBooks_imageView.setImage(image);
-
-    }
-
     public void abTakeButton(ActionEvent event) {
-
         if (event.getSource() == take_btn) {
-            issue_form.setVisible(true);
-            availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(false);
-        }
+            availableBooks book = availableBooks_tableView.getSelectionModel().getSelectedItem();
+            
+            if (book == null) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a book to borrow.");
+                alert.showAndWait();
+                return;
+            }
 
+            // Confirm borrow
+            Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirm Borrow");
+            confirmAlert.setHeaderText(null);
+            confirmAlert.setContentText("Do you want to borrow the book: " + book.getTitle() + "?");
+            
+            if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
+                // Check if book is still available
+                if (book.getAvailableCopies() > 0) {
+                    try {
+                        connect = Database.connectDB();
+                        
+                        // First check if user exists in Borrower table
+                        String checkUserSql = "SELECT BorrowerID FROM Borrower WHERE StudentCode = ?";
+                        prepare = connect.prepareStatement(checkUserSql);
+                        prepare.setString(1, getData.studentCode);
+                        result = prepare.executeQuery();
+                        
+                        String borrowerId;
+                        if (!result.next()) {
+                            // Create new borrower if not exists
+                            borrowerId = "SV" + getData.studentCode;
+                            String insertBorrowerSql = "INSERT INTO Borrower (BorrowerID, FullName, StudentCode, IsStudent, Phone) VALUES (?, ?, ?, TRUE, ?)";
+                            prepare = connect.prepareStatement(insertBorrowerSql);
+                            prepare.setString(1, borrowerId);
+                            prepare.setString(2, getData.studentCode); // Using student code as name temporarily
+                            prepare.setString(3, getData.studentCode);
+                            prepare.setString(4, ""); // Empty phone
+                            prepare.executeUpdate();
+                        }
+
+                        // Update book available copies
+                        String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ? AND AvailableCopies > 0";
+                        prepare = connect.prepareStatement(updateBookSql);
+                        prepare.setInt(1, book.getBookId());
+                        int updated = prepare.executeUpdate();
+
+                        if (updated > 0) {
+                            Alert alert = new Alert(AlertType.INFORMATION);
+                            alert.setTitle("Success Message");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Successfully borrowed the book!");
+                            alert.showAndWait();
+
+                            // Refresh the table
+                            showAvailableBooks();
+                        } else {
+                            Alert alert = new Alert(AlertType.ERROR);
+                            alert.setTitle("Error Message");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Book is no longer available for borrowing.");
+                            alert.showAndWait();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error Message");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Error processing book borrow: " + e.getMessage());
+                        alert.showAndWait();
+                    }
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book is no longer available for borrowing.");
+                    alert.showAndWait();
+                }
+            }
+        }
     }
 
     public void studentNumber() {
-
-        studentNumber_label.setText(getData.studentNumber);
+        studentNumber_label.setText(getData.studentCode);
+        
+        // Get borrowId for current user from borrower table
+        String sql = "SELECT BorrowerID as latestBorrow FROM Borrower WHERE StudentCode = ?";
+        connect = Database.connectDB();
+        
+        try {
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, getData.studentCode);
+            result = prepare.executeQuery();
+            
+            if(result.next()) {
+                String borrowId = result.getString("latestBorrow");
+                borrowId_label.setText(borrowId != null ? borrowId : "--");
+            } else {
+                borrowId_label.setText("--");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            borrowId_label.setText("--");
+        }
     }
 
     public void sideNavButtonDesign(ActionEvent event) {
@@ -734,7 +754,5 @@ public void exit() {
         studentNumberLabel();
 
         displayDate();
-
-        gender();
     }
 }

@@ -1,38 +1,67 @@
 package controller;
 
-import java.sql.Date;
-
 public class availableBooks {
+    private int bookId;
+    private String title;
+    private String author;
+    private int totalCopies;
+    private int availableCopies;
+    private int totalBorrows;
 
-
-    private final String title;
-    private final String author;
-    private final String genre;
-    private final String image;
-    private final Date date;
-
-    public availableBooks(String title, String author, String genre, String image, Date date) {
+    public availableBooks(int bookId, String title, String author, int totalCopies, int availableCopies, int totalBorrows) {
+        this.bookId = bookId;
         this.title = title;
         this.author = author;
-        this.genre = genre;
-        this.image = image;
-        this.date = date;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
+        this.totalBorrows = totalBorrows;
     }
-    
+
+    public int getBookId() {
+        return bookId;
+    }
+
     public String getTitle() {
         return title;
     }
+
     public String getAuthor() {
         return author;
     }
-    public String getGenre() {
-        return genre;
-    }
-    public String getImage() {
-        return image;
-    }
-    public Date getDate() {
-        return date;
+
+    public int getTotalCopies() {
+        return totalCopies;
     }
 
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public int getTotalBorrows() {
+        return totalBorrows;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setTotalCopies(int totalCopies) {
+        this.totalCopies = totalCopies;
+    }
+
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
+    }
+
+    public void setTotalBorrows(int totalBorrows) {
+        this.totalBorrows = totalBorrows;
+    }
 }
