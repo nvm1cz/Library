@@ -17,6 +17,7 @@ import java.util.ResourceBundle;
 import javax.swing.Action;
 
 import dao.Database;
+import model.getData;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -74,16 +75,10 @@ public class DashBoardController implements Initializable {
     private Circle circle_image;
 
     @FXML
-    private Label studentNumber_label;
-
-    @FXML
     private Label borrowId_label;
 
     @FXML
     private Button availableBooks_btn;
-
-    @FXML
-    private Button issueBooks_btn;
 
     @FXML
     private Button returnBooks_btn;
@@ -152,9 +147,6 @@ public class DashBoardController implements Initializable {
     private Circle smallCircle_image;
 
     @FXML
-    private AnchorPane issue_form;
-
-    @FXML
     private AnchorPane returnBook_form;
 
     @FXML
@@ -199,6 +191,30 @@ public class DashBoardController implements Initializable {
     @FXML
     private Label take_titleLabel;
 
+    @FXML
+    private TableView<BorrowedBook> returnBooks_tableView;
+
+    @FXML
+    private TableColumn<BorrowedBook, String> col_rb_bookTitle;
+
+    @FXML
+    private TableColumn<BorrowedBook, String> col_rb_author;
+
+    @FXML
+    private TableColumn<BorrowedBook, String> col_rb_borrowDate;
+
+    @FXML
+    private Button returnBook_btn;
+
+    @FXML
+    private Label returnBook_title;
+
+    @FXML
+    private Label returnBook_author;
+
+    @FXML
+    private Label returnBook_borrowDate;
+
     private Image image;
 
     private Connection connect;
@@ -206,25 +222,13 @@ public class DashBoardController implements Initializable {
     private Statement statement;
     private ResultSet result;
 
-    public void studentNumberLabel() {
-        take_StudentNumber.setText(getData.studentCode);
-    }
-
-     public void clearTakeData() {
-
-        take_BookTitle.setText("");
-        take_titleLabel.setText("");
-        take_authorLabel.setText("");
-        take_genreLabel.setText("");
-        take_dateLabel.setText("");
-        take_imageView.setImage(null);
-
+    public void displayBorrowerId() {
+        borrowId_label.setText("BID: " + getData.borrowerId);
     }
 
     public void displayDate(){
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String date = format.format(new java.util.Date());
-        take_issuedDate.setText(date);
     }
     //TO SHOW THE BOOKS DATA
 
@@ -326,7 +330,7 @@ public class DashBoardController implements Initializable {
                         alert.setContentText("Successfully borrowed the book!");
                         alert.showAndWait();
 
-                        clearTakeData();
+                        //clearTakeData();
                     } else {
                         alert = new Alert(AlertType.ERROR);
                         alert.setTitle("Error Message");
@@ -369,6 +373,32 @@ public class DashBoardController implements Initializable {
                 return;
             }
 
+            // Check if user has any unreturned books
+            try {
+                connect = Database.connectDB();
+                String checkBorrowSql = "SELECT COUNT(*) as count FROM BorrowEntry WHERE BorrowerID = ? AND ReturnDate IS NULL";
+                prepare = connect.prepareStatement(checkBorrowSql);
+                prepare.setString(1, getData.borrowerId);
+                result = prepare.executeQuery();
+
+                if (result.next() && result.getInt("count") > 0) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("You already have a book borrowed. Please return it before borrowing another one.");
+                    alert.showAndWait();
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Error checking borrow status: " + e.getMessage());
+                alert.showAndWait();
+                return;
+            }
+
             // Confirm borrow
             Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
             confirmAlert.setTitle("Confirm Borrow");
@@ -381,24 +411,12 @@ public class DashBoardController implements Initializable {
                     try {
                         connect = Database.connectDB();
                         
-                        // First check if user exists in Borrower table
-                        String checkUserSql = "SELECT BorrowerID FROM Borrower WHERE StudentCode = ?";
-                        prepare = connect.prepareStatement(checkUserSql);
-                        prepare.setString(1, getData.studentCode);
-                        result = prepare.executeQuery();
-                        
-                        String borrowerId;
-                        if (!result.next()) {
-                            // Create new borrower if not exists
-                            borrowerId = "SV" + getData.studentCode;
-                            String insertBorrowerSql = "INSERT INTO Borrower (BorrowerID, FullName, StudentCode, IsStudent, Phone) VALUES (?, ?, ?, TRUE, ?)";
-                            prepare = connect.prepareStatement(insertBorrowerSql);
-                            prepare.setString(1, borrowerId);
-                            prepare.setString(2, getData.studentCode); // Using student code as name temporarily
-                            prepare.setString(3, getData.studentCode);
-                            prepare.setString(4, ""); // Empty phone
-                            prepare.executeUpdate();
-                        }
+                        // Create borrow entry
+                        String createBorrowSql = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate) VALUES (?, ?, CURRENT_TIMESTAMP)";
+                        prepare = connect.prepareStatement(createBorrowSql);
+                        prepare.setString(1, getData.borrowerId);
+                        prepare.setInt(2, book.getBookId());
+                        prepare.executeUpdate();
 
                         // Update book available copies
                         String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ? AND AvailableCopies > 0";
@@ -413,8 +431,9 @@ public class DashBoardController implements Initializable {
                             alert.setContentText("Successfully borrowed the book!");
                             alert.showAndWait();
 
-                            // Refresh the table
+                            // Refresh both tables
                             showAvailableBooks();
+                            showBorrowedBooks();
                         } else {
                             Alert alert = new Alert(AlertType.ERROR);
                             alert.setTitle("Error Message");
@@ -442,19 +461,19 @@ public class DashBoardController implements Initializable {
     }
 
     public void studentNumber() {
-        studentNumber_label.setText(getData.studentCode);
+        borrowId_label.setText("BID: " + getData.borrowerId);
         
         // Get borrowId for current user from borrower table
-        String sql = "SELECT BorrowerID as latestBorrow FROM Borrower WHERE StudentCode = ?";
+        String sql = "SELECT BorrowerID FROM Borrower WHERE BorrowerID = ?";
         connect = Database.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
-            prepare.setString(1, getData.studentCode);
+            prepare.setString(1, getData.borrowerId);
             result = prepare.executeQuery();
             
             if(result.next()) {
-                String borrowId = result.getString("latestBorrow");
+                String borrowId = result.getString("BorrowerID");
                 borrowId_label.setText(borrowId != null ? borrowId : "--");
             } else {
                 borrowId_label.setText("--");
@@ -470,82 +489,51 @@ public class DashBoardController implements Initializable {
 
         if (event.getSource() == halfNav_availableBtn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(true);
             savedBook_form.setVisible(false);
             returnBook_form.setVisible(false);
 
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             currentForm_label.setText("Available Books");
 
-        } else if (event.getSource() == halfNav_takeBtn) {
-
-            issue_form.setVisible(true);
-            availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(false);
-
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            currentForm_label.setText("Issue Books");
-
         } else if (event.getSource() == halfNav_returnBtn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(false);
             savedBook_form.setVisible(false);
             returnBook_form.setVisible(true);
 
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             currentForm_label.setText("Return Books");
 
-            
-
         } else if (event.getSource() == halfNav_saveBtn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(false);
             savedBook_form.setVisible(true);
             returnBook_form.setVisible(false);
 
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             currentForm_label.setText("Saved Books");
-
         }
 
     }
@@ -553,85 +541,52 @@ public class DashBoardController implements Initializable {
     public void navButtonDesign(ActionEvent event) {
         if (event.getSource() == availableBooks_btn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(true);
             savedBook_form.setVisible(false);
             returnBook_form.setVisible(false);
 
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
-             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
+            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
 
             currentForm_label.setText("Available Books");
 
-        } else if (event.getSource() == issueBooks_btn) {
-
-            issue_form.setVisible(true);
-            availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(false);
-
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-             currentForm_label.setText("Issue Books");
-
         } else if (event.getSource() == returnBooks_btn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(false);
             savedBook_form.setVisible(false);
             returnBook_form.setVisible(true);
 
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
-
             currentForm_label.setText("Return Books");
-
-
 
         } else if (event.getSource() == savedBooks_btn) {
 
-            issue_form.setVisible(false);
             availableBooks_form.setVisible(false);
             savedBook_form.setVisible(true);
             returnBook_form.setVisible(false);
 
             savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            issueBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
             halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_takeBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
 
-             currentForm_label.setText("Saved Books");
+            currentForm_label.setText("Saved Books");
         }
-        
     }
     
     private double x = 0;
@@ -742,17 +697,159 @@ public void exit() {
 
     }
 
-    // @override
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO Auto-generated method stub
-
-        //        TO SHOW THE AVAILABLE BOOKS
         showAvailableBooks();
-
-        studentNumber();
-
-        studentNumberLabel();
-
+        showBorrowedBooks();
+        displayBorrowerId();
         displayDate();
+    }
+
+    // Add BorrowedBook class
+    public class BorrowedBook {
+        private int bookId;
+        private String title;
+        private String author;
+        private String borrowDate;
+
+        public BorrowedBook(int bookId, String title, String author, String borrowDate) {
+            this.bookId = bookId;
+            this.title = title;
+            this.author = author;
+            this.borrowDate = borrowDate;
+        }
+
+        public int getBookId() { return bookId; }
+        public String getTitle() { return title; }
+        public String getAuthor() { return author; }
+        public String getBorrowDate() { return borrowDate; }
+    }
+
+    public ObservableList<BorrowedBook> getBorrowedBooksList() {
+        ObservableList<BorrowedBook> borrowedBooks = FXCollections.observableArrayList();
+        
+        String sql = "SELECT b.BookID, b.Title, b.Author, br.BorrowDate " +
+                    "FROM Book b " +
+                    "JOIN BorrowEntry br ON b.BookID = br.BookID " +
+                    "JOIN Borrower bo ON br.BorrowerID = bo.BorrowerID " +
+                    "WHERE bo.BorrowerID = ? AND br.ReturnDate IS NULL";
+        
+        connect = Database.connectDB();
+        
+        try {
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            
+            while (result.next()) {
+                BorrowedBook book = new BorrowedBook(
+                    result.getInt("BookID"),
+                    result.getString("Title"),
+                    result.getString("Author"),
+                    result.getString("BorrowDate")
+                );
+                borrowedBooks.add(book);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return borrowedBooks;
+    }
+
+    public void showBorrowedBooks() {
+        ObservableList<BorrowedBook> borrowedBooks = getBorrowedBooksList();
+        
+        col_rb_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        col_rb_author.setCellValueFactory(new PropertyValueFactory<>("author"));
+        col_rb_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+        
+        returnBooks_tableView.setItems(borrowedBooks);
+    }
+
+    public void selectBorrowedBook() {
+        BorrowedBook selectedBook = returnBooks_tableView.getSelectionModel().getSelectedItem();
+        int num = returnBooks_tableView.getSelectionModel().getSelectedIndex();
+
+        if ((num - 1) < -1 || selectedBook == null) {
+            return;
+        }
+
+        // Only try to update labels if they exist and book is selected
+        if (returnBook_title != null && returnBook_author != null && returnBook_borrowDate != null) {
+            returnBook_title.setText(selectedBook.getTitle());
+            returnBook_author.setText(selectedBook.getAuthor());
+            returnBook_borrowDate.setText(selectedBook.getBorrowDate());
+        }
+    }
+
+    public void returnBook() {
+        BorrowedBook selectedBook = returnBooks_tableView.getSelectionModel().getSelectedItem();
+        
+        if (selectedBook == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a book to return");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Return");
+        confirmAlert.setHeaderText(null);
+        confirmAlert.setContentText("Are you sure you want to return: " + selectedBook.getTitle() + "?");
+
+        if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
+            try {
+                connect = Database.connectDB();
+
+                // Update return date in BorrowEntry
+                String updateBorrowSql = "UPDATE BorrowEntry br " +
+                                       "JOIN Borrower b ON br.BorrowerID = b.BorrowerID " +
+                                       "SET br.ReturnDate = CURRENT_DATE " +
+                                       "WHERE b.BorrowerID = ? AND br.BookID = ? AND br.ReturnDate IS NULL";
+                prepare = connect.prepareStatement(updateBorrowSql);
+                prepare.setString(1, getData.borrowerId);
+                prepare.setInt(2, selectedBook.getBookId());
+                int borrowUpdated = prepare.executeUpdate();
+
+                // Update available copies in Book
+                String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies + 1 " +
+                                     "WHERE BookID = ?";
+                prepare = connect.prepareStatement(updateBookSql);
+                prepare.setInt(1, selectedBook.getBookId());
+                int bookUpdated = prepare.executeUpdate();
+
+                if (borrowUpdated > 0 && bookUpdated > 0) {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Success Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book returned successfully!");
+                    alert.showAndWait();
+
+                    // Refresh the borrowed books list
+                    showBorrowedBooks();
+                    // Clear selection
+                    returnBook_title.setText("");
+                    returnBook_author.setText("");
+                    returnBook_borrowDate.setText("");
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Failed to return book");
+                    alert.showAndWait();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Error returning book: " + e.getMessage());
+                alert.showAndWait();
+            }
+        }
     }
 }

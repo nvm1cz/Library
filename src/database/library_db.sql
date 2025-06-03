@@ -14,7 +14,7 @@ CREATE TABLE Borrower (
   FullName VARCHAR(100),
   Phone VARCHAR(20),
   IsStudent BOOLEAN NOT NULL,
-  StudentCode VARCHAR(20) UNIQUE
+
 );
 
 -- Table: UserAccount
