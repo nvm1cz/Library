@@ -215,6 +215,18 @@ public class DashBoardController implements Initializable {
     @FXML
     private Label returnBook_borrowDate;
 
+    @FXML
+    private TextField search_field;
+
+    @FXML
+    private Button search_btn;
+
+    @FXML
+    private Button clear_search_btn;
+
+    @FXML
+    private Button notification_btn;
+
     private Image image;
 
     private Connection connect;
@@ -233,13 +245,28 @@ public class DashBoardController implements Initializable {
     //TO SHOW THE BOOKS DATA
 
     public ObservableList<availableBooks> dataList() {
+        return dataList(null);
+    }
+
+    public ObservableList<availableBooks> dataList(String searchTerm) {
         ObservableList<availableBooks> listBooks = FXCollections.observableArrayList();
         String sql = "SELECT * FROM Book WHERE AvailableCopies > 0";
+        
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            sql += " AND (LOWER(Title) LIKE LOWER(?) OR LOWER(Author) LIKE LOWER(?))";
+        }
         
         connect = Database.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
+            
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                String searchPattern = "%" + searchTerm.trim() + "%";
+                prepare.setString(1, searchPattern);
+                prepare.setString(2, searchPattern);
+            }
+            
             result = prepare.executeQuery();
             
             while (result.next()) {
@@ -689,6 +716,7 @@ public void exit() {
         showBorrowedBooks();
         displayBorrowerId();
         displayDate();
+        setupSearchField();
     }
 
     // Add BorrowedBook class
@@ -836,6 +864,53 @@ public void exit() {
                 alert.setContentText("Error returning book: " + e.getMessage());
                 alert.showAndWait();
             }
+        }
+    }
+
+    @FXML
+    public void searchBooks() {
+        String searchTerm = search_field.getText();
+        ObservableList<availableBooks> searchResults = dataList(searchTerm);
+        availableBooks_tableView.setItems(searchResults);
+    }
+
+    @FXML
+    public void clearSearch() {
+        search_field.clear();
+        showAvailableBooks();
+    }
+
+    // Add key event handler for search field
+    private void setupSearchField() {
+        search_field.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                searchBooks();
+            }
+        });
+    }
+
+    @FXML
+    public void showNotifications() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/notification.fxml"));
+            Parent root = loader.load();
+            
+            Stage notificationStage = new Stage();
+            Scene scene = new Scene(root);
+            
+            notificationStage.initStyle(StageStyle.UNDECORATED);
+            notificationStage.setScene(scene);
+            
+            // Position the notification window near the notification button
+            Button notifButton = notification_btn;
+            javafx.geometry.Bounds bounds = notifButton.localToScreen(notifButton.getBoundsInLocal());
+            notificationStage.setX(bounds.getMaxX() - 400); // 400 is the width of notification window
+            notificationStage.setY(bounds.getMaxY() + 10);
+            
+            notificationStage.show();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

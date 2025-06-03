@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.shape.Circle?>
@@ -34,12 +35,17 @@
                   </Label>
                   <Button fx:id="close" layoutX="920.0" layoutY="2.0" mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="50.0" styleClass="close-btn" stylesheets="@designDashboard.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
                      <graphic>
-                        <FontAwesomeIcon glyphName="CLOSE" size="1.2em" />
+                        <FontAwesomeIcon glyphName="CLOSE" selectionFill="BLACK" size="1.2em" />
                      </graphic>
                   </Button>
                   <Button fx:id="minimize" layoutX="884.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="25.0" prefWidth="50.0" styleClass="minimize-btn" stylesheets="@designDashboard.css">
                      <graphic>
                         <FontAwesomeIcon glyphName="MINUS" size="1.2em" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="notification_btn" layoutX="834.0" layoutY="2.0" mnemonicParsing="false" onAction="#showNotifications" prefHeight="25.0" prefWidth="50.0" styleClass="notification-btn" stylesheets="@designDashboard.css">
+                     <graphic>
+                        <FontAwesomeIcon glyphName="BELL" size="1.2em" />
                      </graphic>
                   </Button>
                   <Line endX="677.0" endY="0.3333282470703125" layoutX="307.0" layoutY="27.0" startX="-307.0" startY="0.3333282470703125" />
@@ -81,7 +87,7 @@
                         </Button>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="nav_form" layoutX="7.0" prefHeight="529.0" prefWidth="226.0" styleClass="nav-form" stylesheets="@designDashboard.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-13.0" AnchorPane.topAnchor="0.0">
+                  <AnchorPane fx:id="nav_form" layoutX="7.0" prefHeight="535.0" prefWidth="230.0" styleClass="nav-form" stylesheets="@designDashboard.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-17.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <Circle fx:id="circle_image" fill="#414d59" layoutX="112.0" layoutY="88.0" radius="74.0" stroke="BLACK" strokeType="INSIDE" />
                         <Label layoutX="74.0" layoutY="174.0" text="Welcome" textFill="WHITE">
@@ -89,7 +95,7 @@
                               <Font name="Microsoft Sans Serif" size="18.0" />
                            </font>
                         </Label>
-                        <Label fx:id="borrowId_label" layoutX="74.0" layoutY="203.0" text="--" textFill="WHITE">
+                        <Label fx:id="borrowId_label" layoutX="53.0" layoutY="206.0" text="--" textFill="WHITE">
                            <font>
                               <Font name="Microsoft Sans Serif" size="20.0" />
                            </font>
@@ -120,16 +126,19 @@
                <children>
                   <AnchorPane fx:id="availableBooks_form" layoutX="14.0" layoutY="0.0" prefHeight="535.0" prefWidth="750.0">
                      <children>
-                        <TableView fx:id="availableBooks_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                        <TextField fx:id="search_field" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="250.0" promptText="Search by book title or author..." styleClass="textfield" />
+                        <Button fx:id="search_btn" layoutX="274.0" layoutY="14.0" mnemonicParsing="false" onAction="#searchBooks" prefHeight="30.0" prefWidth="100.0" styleClass="search-btn" text="Search" />
+                        <Button fx:id="clear_search_btn" layoutX="384.0" layoutY="14.0" mnemonicParsing="false" onAction="#clearSearch" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                        <TableView fx:id="availableBooks_tableView" layoutX="14.0" layoutY="54.0" prefHeight="400.0" prefWidth="722.0">
                            <columns>
-                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="200.0" text="Title" />
+                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="180.0" text="Book Title" />
                               <TableColumn fx:id="col_ab_author" prefWidth="180.0" text="Author" />
                               <TableColumn fx:id="col_ab_totalCopies" prefWidth="120.0" text="Total Copies" />
                               <TableColumn fx:id="col_ab_availableCopies" prefWidth="120.0" text="Available" />
-                              <TableColumn fx:id="col_ab_totalBorrows" prefWidth="118.0" text="Total Borrows" />
+                              <TableColumn fx:id="col_ab_totalBorrows" prefWidth="120.0" text="Total Borrows" />
                            </columns>
                         </TableView>
-                        <Button fx:id="take_btn" layoutX="14.0" layoutY="430.0" mnemonicParsing="false" onAction="#abTakeButton" prefHeight="40.0" prefWidth="100.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />
+                        <Button fx:id="take_btn" layoutX="14.0" layoutY="463.0" mnemonicParsing="false" onAction="#abTakeButton" prefHeight="40.0" prefWidth="100.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />
                      </children>
                   </AnchorPane>
                   <AnchorPane fx:id="returnBook_form" layoutX="14.0" layoutY="0.0" prefHeight="535.0" prefWidth="750.0" visible="false">

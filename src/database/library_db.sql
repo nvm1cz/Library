@@ -13,7 +13,7 @@ CREATE TABLE Borrower (
   BorrowerID VARCHAR(50) PRIMARY KEY, -- mã SV hoặc ID cấp cho người ngoài
   FullName VARCHAR(100),
   Phone VARCHAR(20),
-  IsStudent BOOLEAN NOT NULL,
+  IsStudent BOOLEAN NOT NULL
 
 );
 
@@ -100,6 +100,18 @@ CREATE TABLE Reservation (
 );
 
 
+CREATE TABLE Review (
+  ReviewID INT AUTO_INCREMENT PRIMARY KEY,
+  EntryID INT NOT NULL,
+  Rating INT CHECK (Rating BETWEEN 1 AND 5),
+  Comment TEXT,
+  ReviewDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (EntryID)
+    REFERENCES BorrowEntry(EntryID)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+);
+
 
 -- Admin
 INSERT INTO Admin (Username, Password, FullName) VALUES
@@ -107,9 +119,9 @@ INSERT INTO Admin (Username, Password, FullName) VALUES
 
 
 -- Borrower
-INSERT INTO Borrower (BorrowerID, FullName, Phone, IsStudent, StudentCode) VALUES
-('SV001', 'Lê Văn Sinh', '0912345678', TRUE, 'SV001'),
-('ND001', 'Phạm Quý Khách', '0988888888', FALSE, NULL);
+INSERT INTO Borrower (BorrowerID, FullName, Phone, IsStudent) VALUES
+('SV001', 'Lê Văn Sinh', '0912345678', TRUE),
+('ND001', 'Phạm Quý Khách', '0988888888', FALSE);
 
 -- UserAccount
 INSERT INTO UserAccount (Username, Password, BorrowerID) VALUES
@@ -153,7 +165,7 @@ CREATE INDEX idx_book_author ON Book (Author);
 
 -- Borrower
 CREATE INDEX idx_borrower_name ON Borrower (FullName);
-CREATE INDEX idx_borrower_studentcode ON Borrower (StudentCode);
+
 
 -- UserAccount
 CREATE INDEX idx_useraccount_username ON UserAccount (Username);

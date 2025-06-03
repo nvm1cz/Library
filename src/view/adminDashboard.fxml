@@ -64,7 +64,7 @@
          <center>
             <AnchorPane fx:id="mainCenter_form" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <AnchorPane fx:id="manageBooks_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="manageBooks_form" prefHeight="521.0" prefWidth="766.0">
                      <children>
                         <TableView fx:id="books_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
@@ -135,7 +135,7 @@
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="reservations_form" prefHeight="521.0" prefWidth="766.0">
+                  <AnchorPane fx:id="reservations_form" prefHeight="521.0" prefWidth="766.0" visible="false">
                      <children>
                         <TableView fx:id="reservations_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>

@@ -792,6 +792,7 @@ public class AdminDashboardController implements Initializable {
     public void addUser() {
         String sql = "INSERT INTO UserAccount (Username, Password, BorrowerID) VALUES (?, ?, ?)";
         String sqlBorrower = "INSERT INTO Borrower (BorrowerID, FullName, IsStudent) VALUES (?, ?, ?)";
+        String getLastId = "SELECT BorrowerID FROM Borrower WHERE BorrowerID LIKE ? ORDER BY BorrowerID DESC LIMIT 1";
         
         connect = Database.connectDB();
         
@@ -829,7 +830,22 @@ public class AdminDashboardController implements Initializable {
             try {
                 // Create new borrower
                 boolean isStudent = userType_combo.getValue().equals("SV");
-                String borrowerId = (isStudent ? "SV" : "ND") + System.currentTimeMillis();
+                String prefix = isStudent ? "SV" : "ND";
+                
+                // Get last ID with same prefix
+                prepare = connect.prepareStatement(getLastId);
+                prepare.setString(1, prefix + "%");
+                result = prepare.executeQuery();
+                
+                int nextNum = 1;
+                if (result.next()) {
+                    String lastId = result.getString("BorrowerID");
+                    String numStr = lastId.substring(2); // Remove prefix
+                    nextNum = Integer.parseInt(numStr) + 1;
+                }
+                
+                // Format: SV001 or ND001 (3 digits, padded with zeros)
+                String borrowerId = String.format("%s%03d", prefix, nextNum);
                 
                 prepare = connect.prepareStatement(sqlBorrower);
                 prepare.setString(1, borrowerId);
