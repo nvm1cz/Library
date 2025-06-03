@@ -368,92 +368,78 @@ public class DashBoardController implements Initializable {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
-                alert.setContentText("Please select a book to borrow.");
+                alert.setContentText("Please select a book to reserve.");
                 alert.showAndWait();
                 return;
             }
 
-            // Check if user has any unreturned books
-            try {
-                connect = Database.connectDB();
-                String checkBorrowSql = "SELECT COUNT(*) as count FROM BorrowEntry WHERE BorrowerID = ? AND ReturnDate IS NULL";
-                prepare = connect.prepareStatement(checkBorrowSql);
-                prepare.setString(1, getData.borrowerId);
-                result = prepare.executeQuery();
-
-                if (result.next() && result.getInt("count") > 0) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("You already have a book borrowed. Please return it before borrowing another one.");
-                    alert.showAndWait();
-                    return;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Error checking borrow status: " + e.getMessage());
-                alert.showAndWait();
-                return;
-            }
-
-            // Confirm borrow
+            // Confirm reservation
             Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
-            confirmAlert.setTitle("Confirm Borrow");
+            confirmAlert.setTitle("Confirm Reservation");
             confirmAlert.setHeaderText(null);
-            confirmAlert.setContentText("Do you want to borrow the book: " + book.getTitle() + "?");
+            confirmAlert.setContentText("Do you want to reserve the book: " + book.getTitle() + "?");
             
             if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
-                // Check if book is still available
-                if (book.getAvailableCopies() > 0) {
-                    try {
-                        connect = Database.connectDB();
-                        
-                        // Create borrow entry
-                        String createBorrowSql = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate) VALUES (?, ?, CURRENT_TIMESTAMP)";
-                        prepare = connect.prepareStatement(createBorrowSql);
-                        prepare.setString(1, getData.borrowerId);
-                        prepare.setInt(2, book.getBookId());
-                        prepare.executeUpdate();
-
-                        // Update book available copies
-                        String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ? AND AvailableCopies > 0";
-                        prepare = connect.prepareStatement(updateBookSql);
-                        prepare.setInt(1, book.getBookId());
-                        int updated = prepare.executeUpdate();
-
-                        if (updated > 0) {
-                            Alert alert = new Alert(AlertType.INFORMATION);
-                            alert.setTitle("Success Message");
-                            alert.setHeaderText(null);
-                            alert.setContentText("Successfully borrowed the book!");
-                            alert.showAndWait();
-
-                            // Refresh both tables
-                            showAvailableBooks();
-                            showBorrowedBooks();
-                        } else {
-                            Alert alert = new Alert(AlertType.ERROR);
-                            alert.setTitle("Error Message");
-                            alert.setHeaderText(null);
-                            alert.setContentText("Book is no longer available for borrowing.");
-                            alert.showAndWait();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                try {
+                    connect = Database.connectDB();
+                    
+                    // First get the AccountID for the current user
+                    String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
+                    prepare = connect.prepareStatement(getAccountSql);
+                    prepare.setString(1, getData.borrowerId);
+                    result = prepare.executeQuery();
+                    
+                    if (!result.next()) {
                         Alert alert = new Alert(AlertType.ERROR);
                         alert.setTitle("Error Message");
                         alert.setHeaderText(null);
-                        alert.setContentText("Error processing book borrow: " + e.getMessage());
+                        alert.setContentText("Could not find your account information.");
                         alert.showAndWait();
+                        return;
                     }
-                } else {
+                    
+                    int accountId = result.getInt("AccountID");
+                    
+                    // Check if user already has a pending reservation for this book
+                    String checkReservationSql = "SELECT COUNT(*) as count FROM Reservation " +
+                                               "WHERE AccountID = ? AND BookID = ? AND Status = 'Pending'";
+                    prepare = connect.prepareStatement(checkReservationSql);
+                    prepare.setInt(1, accountId);
+                    prepare.setInt(2, book.getBookId());
+                    result = prepare.executeQuery();
+                    
+                    if (result.next() && result.getInt("count") > 0) {
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error Message");
+                        alert.setHeaderText(null);
+                        alert.setContentText("You already have a pending reservation for this book.");
+                        alert.showAndWait();
+                        return;
+                    }
+                    
+                    // Create reservation
+                    String createReservationSql = "INSERT INTO Reservation (AccountID, BookID, ReservationDate, Status) " +
+                                                "VALUES (?, ?, CURRENT_TIMESTAMP, 'Pending')";
+                    prepare = connect.prepareStatement(createReservationSql);
+                    prepare.setInt(1, accountId);
+                    prepare.setInt(2, book.getBookId());
+                    prepare.executeUpdate();
+
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Success Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Book reserved successfully! Please wait for library staff to process your reservation.");
+                    alert.showAndWait();
+
+                    // Refresh the available books table
+                    showAvailableBooks();
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Error Message");
                     alert.setHeaderText(null);
-                    alert.setContentText("Book is no longer available for borrowing.");
+                    alert.setContentText("Error creating reservation: " + e.getMessage());
                     alert.showAndWait();
                 }
             }

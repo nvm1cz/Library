@@ -108,9 +108,6 @@ public class AdminDashboardController implements Initializable {
     private TextField password_field;
 
     @FXML
-    private ComboBox<Borrower> borrower_field;
-
-    @FXML
     private ComboBox<String> userType_combo;
 
     @FXML
@@ -378,7 +375,11 @@ public class AdminDashboardController implements Initializable {
                     result.getString("FullName")
                 ));
             }
-            borrower_combo.setItems(borrowers);
+            
+            // Set items for both ComboBoxes
+            if (borrower_combo != null) {
+                borrower_combo.setItems(borrowers);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -755,16 +756,11 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void loadAvailableBorrowers() {
-        String sql = "SELECT BorrowerID, FullName FROM Borrower " +
-                    "WHERE BorrowerID NOT IN (SELECT BorrowerID FROM UserAccount WHERE BorrowerID IS NOT NULL) " +
-                    "AND IsStudent = ? " +
-                    "ORDER BY FullName";
+        String sql = "SELECT BorrowerID, FullName FROM Borrower ORDER BY FullName";
         connect = Database.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
-            String selectedType = userType_combo.getValue();
-            prepare.setBoolean(1, selectedType != null && selectedType.equals("SV"));
             result = prepare.executeQuery();
             
             ObservableList<Borrower> borrowers = FXCollections.observableArrayList();
@@ -774,7 +770,11 @@ public class AdminDashboardController implements Initializable {
                     result.getString("FullName")
                 ));
             }
-            borrower_field.setItems(borrowers);
+            
+            // Set items for borrower combo in borrow records
+            if (borrower_combo != null) {
+                borrower_combo.setItems(borrowers);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -784,14 +784,14 @@ public class AdminDashboardController implements Initializable {
         userType_combo.setItems(FXCollections.observableArrayList("SV", "ND"));
         userType_combo.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                loadAvailableBorrowers();
+                // No need to load borrowers anymore since we removed the borrower_field
             }
         });
     }
 
     public void addUser() {
         String sql = "INSERT INTO UserAccount (Username, Password, BorrowerID) VALUES (?, ?, ?)";
-        String sqlBorrower = "INSERT INTO Borrower (BorrowerID, FullName, IsStudent, StudentCode) VALUES (?, ?, ?, ?)";
+        String sqlBorrower = "INSERT INTO Borrower (BorrowerID, FullName, IsStudent) VALUES (?, ?, ?)";
         
         connect = Database.connectDB();
         
@@ -835,7 +835,6 @@ public class AdminDashboardController implements Initializable {
                 prepare.setString(1, borrowerId);
                 prepare.setString(2, borrower_name.getText());
                 prepare.setBoolean(3, isStudent);
-                prepare.setString(4, isStudent ? borrowerId : null);
                 prepare.executeUpdate();
 
                 // Add new user
@@ -877,7 +876,7 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void updateUser() {
-        String sql = "UPDATE UserAccount SET Username = ?, Password = ?, BorrowerID = ? WHERE AccountID = ?";
+        String sql = "UPDATE UserAccount SET Username = ?, Password = ? WHERE AccountID = ?";
         
         connect = Database.connectDB();
         
@@ -923,8 +922,7 @@ public class AdminDashboardController implements Initializable {
             prepare = connect.prepareStatement(sql);
             prepare.setString(1, username_field.getText());
             prepare.setString(2, password_field.getText());
-            prepare.setString(3, borrower_field.getValue() != null ? borrower_field.getValue().getId() : null);
-            prepare.setInt(4, selectedUser.getAccountId());
+            prepare.setInt(3, selectedUser.getAccountId());
             prepare.executeUpdate();
 
             alert = new Alert(AlertType.INFORMATION);
@@ -934,11 +932,15 @@ public class AdminDashboardController implements Initializable {
             alert.showAndWait();
 
             showUsers();
-            loadAvailableBorrowers();
             clearUserFields();
             
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error updating user: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 
@@ -1220,6 +1222,8 @@ public class AdminDashboardController implements Initializable {
         
         setupUserTypeComboBox();
         setupUserTableListener();
+        loadBorrowers();
+        loadAvailableBooks();
         
         col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
