@@ -131,6 +131,33 @@ ON UPDATE CASCADE
 ON DELETE CASCADE
 );
 
+-- Bảng Wishlist
+CREATE TABLE Wishlist (
+    AccountID INT,
+    BookID INT,
+    DateAdded DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (AccountID, BookID),
+    FOREIGN KEY (AccountID)
+        REFERENCES UserAccount(AccountID)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (BookID)
+        REFERENCES Book(BookID)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+CREATE TABLE Notification (
+    NotificationID INT AUTO_INCREMENT PRIMARY KEY,
+    AccountID INT NOT NULL,
+    Message VARCHAR(255) NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    IsRead BOOLEAN DEFAULT 0,
+    FOREIGN KEY (AccountID) REFERENCES UserAccount(AccountID)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
 -- Dữ liệu mẫu
 
 -- Admin

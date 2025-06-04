@@ -1290,7 +1290,7 @@ public class AdminDashboardController implements Initializable {
         // Check if book is available when fulfilling
         if (newStatus.equals("Fulfilled")) {
             String checkBook = "SELECT BookID, AvailableCopies FROM Book WHERE Title = ?";
-            String checkBorrower = "SELECT b.BorrowerID FROM UserAccount ua " +
+            String checkBorrower = "SELECT b.BorrowerID, ua.AccountID FROM UserAccount ua " +
                                  "JOIN Borrower b ON ua.BorrowerID = b.BorrowerID " +
                                  "WHERE ua.Username = ?";
             
@@ -1312,7 +1312,7 @@ public class AdminDashboardController implements Initializable {
                 
                 int bookId = result.getInt("BookID");
 
-                // Get BorrowerID
+                // Get BorrowerID & AccountID
                 prepare = connect.prepareStatement(checkBorrower);
                 prepare.setString(1, selectedReservation.getUsername());
                 result = prepare.executeQuery();
@@ -1327,6 +1327,7 @@ public class AdminDashboardController implements Initializable {
                 }
                 
                 String borrowerId = result.getString("BorrowerID");
+                int accountId = result.getInt("AccountID");
                 
                 // Start transaction
                 connect.setAutoCommit(false);
@@ -1351,6 +1352,14 @@ public class AdminDashboardController implements Initializable {
                     String updateBook = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ?";
                     prepare = connect.prepareStatement(updateBook);
                     prepare.setInt(1, bookId);
+                    prepare.executeUpdate();
+
+                    // 4. Gửi thông báo cho user
+                    String message = "Yêu cầu đặt sách '" + selectedReservation.getBookTitle() + "' của bạn đã được duyệt.";
+                    String insertNotif = "INSERT INTO Notification (AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
+                    prepare = connect.prepareStatement(insertNotif);
+                    prepare.setInt(1, accountId);
+                    prepare.setString(2, message);
                     prepare.executeUpdate();
 
                     connect.commit();
@@ -1395,6 +1404,27 @@ public class AdminDashboardController implements Initializable {
                 prepare.setInt(2, selectedReservation.getId());
                 
                 prepare.executeUpdate();
+
+                // Nếu là Canceled thì gửi thông báo
+                if (newStatus.equals("Canceled")) {
+                    // Lấy AccountID
+                    String getAccountId = "SELECT ua.AccountID FROM UserAccount ua WHERE ua.Username = ?";
+                    PreparedStatement ps = connect.prepareStatement(getAccountId);
+                    ps.setString(1, selectedReservation.getUsername());
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        int accountId = rs.getInt("AccountID");
+                        String message = "Yêu cầu đặt sách '" + selectedReservation.getBookTitle() + "' của bạn đã bị hủy.";
+                        String insertNotif = "INSERT INTO Notification (AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
+                        PreparedStatement ps2 = connect.prepareStatement(insertNotif);
+                        ps2.setInt(1, accountId);
+                        ps2.setString(2, message);
+                        ps2.executeUpdate();
+                        ps2.close();
+                    }
+                    rs.close();
+                    ps.close();
+                }
                 
                 alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Success");

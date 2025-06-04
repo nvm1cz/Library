@@ -50,6 +50,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import java.sql.CallableStatement;
+import java.util.Optional;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.PasswordField;
 
 public class DashBoardController implements Initializable {
     
@@ -82,12 +85,6 @@ public class DashBoardController implements Initializable {
     private Button availableBooks_btn;
 
     @FXML
-    private Button returnBooks_btn;
-
-    @FXML
-    private Button savedBooks_btn;
-
-    @FXML
     private Button edit_btn;
 
     @FXML
@@ -106,16 +103,10 @@ public class DashBoardController implements Initializable {
     private TableColumn<availableBooks, String> col_ab_author;
 
     @FXML
+    private TableColumn<availableBooks, String> col_ab_genre;
+
+    @FXML
     private TableColumn<availableBooks, Integer> col_ab_availableCopies;
-
-    @FXML
-    private ImageView availableBooks_imageView;
-
-    @FXML
-    private Button save_btn;
-
-    @FXML
-    private Label availableBooks_title;
 
     @FXML
     private Button take_btn;
@@ -130,61 +121,31 @@ public class DashBoardController implements Initializable {
     private AnchorPane halfNav_form;
 
     @FXML
-    private Button halfNav_returnBtn;
-
-    @FXML
-    private Button halfNav_saveBtn;
-
-    @FXML
-    private Button halfNav_takeBtn;
-
-    @FXML
     private Circle smallCircle_image;
-
-    @FXML
-    private AnchorPane returnBook_form;
-
-    @FXML
-    private AnchorPane savedBook_form;
 
     @FXML
     private Label currentForm_label;
 
-     @FXML
-    private TextField take_BookTitle;
+    @FXML
+    private TextField search_field;
 
     @FXML
-    private TextField take_FirstName;
+    private Button search_btn;
 
     @FXML
-    private TextField take_LastName;
+    private Button clear_search_btn;
 
     @FXML
-    private Label take_StudentNumber;
+    private Button notification_btn;
 
     @FXML
-    private Label take_authorLabel;
+    private Button returnBooks_btn;
 
     @FXML
-    private Button take_clearBtn;
+    private Button halfNav_returnBtn;
 
     @FXML
-    private Label take_dateLabel;
-
-    @FXML
-    private Label take_genreLabel;
-
-    @FXML
-    private ImageView take_imageView;
-
-    @FXML
-    private Label take_issuedDate;
-
-    @FXML
-    private Button take_takeBtn;
-
-    @FXML
-    private Label take_titleLabel;
+    private AnchorPane returnBooks_form;
 
     @FXML
     private TableView<BorrowedBook> returnBooks_tableView;
@@ -199,9 +160,6 @@ public class DashBoardController implements Initializable {
     private TableColumn<BorrowedBook, String> col_rb_borrowDate;
 
     @FXML
-    private Button returnBook_btn;
-
-    @FXML
     private Label returnBook_title;
 
     @FXML
@@ -211,16 +169,73 @@ public class DashBoardController implements Initializable {
     private Label returnBook_borrowDate;
 
     @FXML
-    private TextField search_field;
+    private Button return_btn;
 
     @FXML
-    private Button search_btn;
+    private TableView<WishlistBook> wishlist_tableView;
 
     @FXML
-    private Button clear_search_btn;
+    private TableColumn<WishlistBook, String> col_wl_bookTitle;
 
     @FXML
-    private Button notification_btn;
+    private TableColumn<WishlistBook, String> col_wl_author;
+
+    @FXML
+    private TableColumn<WishlistBook, String> col_wl_genre;
+
+    @FXML
+    private TableColumn<WishlistBook, String> col_wl_dateAdded;
+
+    @FXML
+    private Button favorite_btn;
+
+    @FXML
+    private Button remove_wishlist_btn;
+
+    @FXML
+    private AnchorPane settings_form;
+
+    @FXML
+    private TextField settings_fullname;
+
+    @FXML
+    private TextField settings_phone;
+
+    @FXML
+    private PasswordField settings_currentPassword;
+
+    @FXML
+    private PasswordField settings_newPassword;
+
+    @FXML
+    private PasswordField settings_confirmPassword;
+
+    @FXML
+    private Button settings_btn;
+
+    @FXML
+    private Button borrowedBooks_btn;
+
+    @FXML
+    private AnchorPane borrowedBooks_form;
+
+    @FXML
+    private TableView<BorrowedBookDisplay> borrowedBooks_tableView;
+
+    @FXML
+    private TableColumn<BorrowedBookDisplay, String> col_bb_bookTitle;
+
+    @FXML
+    private TableColumn<BorrowedBookDisplay, String> col_bb_author;
+
+    @FXML
+    private TableColumn<BorrowedBookDisplay, String> col_bb_borrowDate;
+
+    @FXML
+    private TableColumn<BorrowedBookDisplay, String> col_bb_returnDate;
+
+    @FXML
+    private TableColumn<BorrowedBookDisplay, String> col_bb_status;
 
     private Image image;
 
@@ -245,15 +260,18 @@ public class DashBoardController implements Initializable {
 
     public ObservableList<availableBooks> dataList(String searchTerm) {
         ObservableList<availableBooks> listBooks = FXCollections.observableArrayList();
-        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(DISTINCT a.FullName SEPARATOR ', ') as Authors, " +
+                    "GROUP_CONCAT(DISTINCT g.Name SEPARATOR ', ') as Genres, " +
                     "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
                     "FROM Book b " +
                     "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
                     "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "LEFT JOIN BookGenre bg ON b.BookID = bg.BookID " +
+                    "LEFT JOIN Genre g ON bg.GenreID = g.GenreID " +
                     "WHERE b.AvailableCopies > 0";
         
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            sql += " AND (LOWER(b.Title) LIKE LOWER(?) OR LOWER(a.FullName) LIKE LOWER(?))";
+            sql += " AND (LOWER(b.Title) LIKE LOWER(?) OR LOWER(a.FullName) LIKE LOWER(?) OR LOWER(g.Name) LIKE LOWER(?))";
         }
         
         sql += " GROUP BY b.BookID";
@@ -267,6 +285,7 @@ public class DashBoardController implements Initializable {
                 String searchPattern = "%" + searchTerm.trim() + "%";
                 prepare.setString(1, searchPattern);
                 prepare.setString(2, searchPattern);
+                prepare.setString(3, searchPattern);
             }
             
             result = prepare.executeQuery();
@@ -276,6 +295,7 @@ public class DashBoardController implements Initializable {
                     result.getInt("BookID"),
                     result.getString("Title"),
                     result.getString("Authors"),
+                    result.getString("Genres"),
                     result.getInt("TotalCopies"),
                     result.getInt("AvailableCopies"),
                     result.getInt("TotalBorrows")
@@ -295,6 +315,7 @@ public class DashBoardController implements Initializable {
         
         col_ab_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         col_ab_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+        col_ab_genre.setCellValueFactory(new PropertyValueFactory<>("genres"));
         col_ab_availableCopies.setCellValueFactory(new PropertyValueFactory<>("availableCopies"));
         
         availableBooks_tableView.setItems(listBooks);
@@ -307,85 +328,7 @@ public class DashBoardController implements Initializable {
         if ((num - 1) < -1) {
             return;
         }
-        availableBooks_title.setText(bookData.getTitle());
     }
-
-    public void takeBook() {
-        Date date = new Date();
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-
-        String updateBookSql = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ? AND AvailableCopies > 0";
-
-        connect = Database.connectDB();
-
-        try {
-            Alert alert;
-
-            if (take_FirstName.getText().isEmpty()
-                    || take_LastName.getText().isEmpty()) {
-
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Admin Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Please type complete Student Details");
-                alert.showAndWait();
-            } else if (take_titleLabel.getText().isEmpty()) {
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Admin Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Please indicate the book you want to take.");
-                alert.showAndWait();
-            } else {
-                // Check if book is available
-                String checkSql = "SELECT BookID, AvailableCopies FROM Book WHERE Title = ?";
-                prepare = connect.prepareStatement(checkSql);
-                prepare.setString(1, take_titleLabel.getText());
-                result = prepare.executeQuery();
-
-                if (result.next() && result.getInt("AvailableCopies") > 0) {
-                    int bookId = result.getInt("BookID");
-
-                    // Update book available copies
-                    prepare = connect.prepareStatement(updateBookSql);
-                    prepare.setInt(1, bookId);
-                    int updated = prepare.executeUpdate();
-
-                    if (updated > 0) {
-                        alert = new Alert(AlertType.INFORMATION);
-                        alert.setTitle("Success Message");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Successfully borrowed the book!");
-                        alert.showAndWait();
-
-                        //clearTakeData();
-                    } else {
-                        alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Error Message");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Book is no longer available for borrowing.");
-                        alert.showAndWait();
-                    }
-                } else {
-                    alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Book is not available for borrowing.");
-                    alert.showAndWait();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Error Message");
-            alert.setHeaderText(null);
-            alert.setContentText("Error occurred while processing your request: " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-    
-
-    //SHOWING BOOKS DATA
-    private ObservableList<availableBooks> listBook;
 
     public void abTakeButton(ActionEvent event) {
         if (event.getSource() == take_btn) {
@@ -518,106 +461,85 @@ public class DashBoardController implements Initializable {
     }
 
     public void sideNavButtonDesign(ActionEvent event) {
-
         if (event.getSource() == halfNav_availableBtn) {
-
             availableBooks_form.setVisible(true);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(false);
-
+            returnBooks_form.setVisible(false);
+            settings_form.setVisible(false);
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
+            returnBooks_btn.setStyle(null);
+            settings_btn.setStyle(null);
             halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
+            halfNav_returnBtn.setStyle(null);
             currentForm_label.setText("Available Books");
-
         } else if (event.getSource() == halfNav_returnBtn) {
-
             availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(true);
-
+            returnBooks_form.setVisible(true);
+            settings_form.setVisible(false);
+            availableBooks_btn.setStyle(null);
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
+            settings_btn.setStyle(null);
+            halfNav_availableBtn.setStyle(null);
             halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            currentForm_label.setText("Return Books");
-
-        } else if (event.getSource() == halfNav_saveBtn) {
-
+            currentForm_label.setText("My Wishlist");
+            showWishlist();
+        } else if (event.getSource() == settings_btn) {
             availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(true);
-            returnBook_form.setVisible(false);
-
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            currentForm_label.setText("Saved Books");
+            returnBooks_form.setVisible(false);
+            settings_form.setVisible(true);
+            availableBooks_btn.setStyle(null);
+            returnBooks_btn.setStyle(null);
+            settings_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            halfNav_availableBtn.setStyle(null);
+            halfNav_returnBtn.setStyle(null);
+            currentForm_label.setText("Settings");
+            loadUserInfo();
         }
-
     }
 
     public void navButtonDesign(ActionEvent event) {
         if (event.getSource() == availableBooks_btn) {
-
             availableBooks_form.setVisible(true);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(false);
-
+            borrowedBooks_form.setVisible(false);
+            returnBooks_form.setVisible(false);
+            settings_form.setVisible(false);
             availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
+            borrowedBooks_btn.setStyle(null);
+            returnBooks_btn.setStyle(null);
+            settings_btn.setStyle(null);
             currentForm_label.setText("Available Books");
-
+        } else if (event.getSource() == borrowedBooks_btn) {
+            availableBooks_form.setVisible(false);
+            borrowedBooks_form.setVisible(true);
+            returnBooks_form.setVisible(false);
+            settings_form.setVisible(false);
+            availableBooks_btn.setStyle(null);
+            borrowedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            returnBooks_btn.setStyle(null);
+            settings_btn.setStyle(null);
+            currentForm_label.setText("Borrowed Books");
+            showAllBorrowedBooks();
         } else if (event.getSource() == returnBooks_btn) {
-
             availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(false);
-            returnBook_form.setVisible(true);
-
+            borrowedBooks_form.setVisible(false);
+            returnBooks_form.setVisible(true);
+            settings_form.setVisible(false);
+            availableBooks_btn.setStyle(null);
+            borrowedBooks_btn.setStyle(null);
             returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            currentForm_label.setText("Return Books");
-
-        } else if (event.getSource() == savedBooks_btn) {
-
+            settings_btn.setStyle(null);
+            currentForm_label.setText("My Wishlist");
+            showWishlist();
+        } else if (event.getSource() == settings_btn) {
             availableBooks_form.setVisible(false);
-            savedBook_form.setVisible(true);
-            returnBook_form.setVisible(false);
-
-            savedBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            availableBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            returnBooks_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            halfNav_saveBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
-            halfNav_returnBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-            halfNav_availableBtn.setStyle("-fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);");
-
-            currentForm_label.setText("Saved Books");
+            borrowedBooks_form.setVisible(false);
+            returnBooks_form.setVisible(false);
+            settings_form.setVisible(true);
+            availableBooks_btn.setStyle(null);
+            borrowedBooks_btn.setStyle(null);
+            returnBooks_btn.setStyle(null);
+            settings_btn.setStyle("-fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);");
+            currentForm_label.setText("Profile");
+            loadUserInfo();
         }
     }
     
@@ -625,69 +547,32 @@ public class DashBoardController implements Initializable {
     private double y = 0;
 
     public void sliderArrow(){
-
-        TranslateTransition slide = new TranslateTransition();
-
-        slide.setDuration(Duration.seconds(0.5));
-        slide.setNode(nav_form);
-        slide.setToX(-226);
-
-        TranslateTransition slide1 = new TranslateTransition();
-
-        slide1.setDuration(Duration.seconds(0.5));
-        slide1.setNode(mainCenter_form);
-        slide1.setToX(-226+90);
-
-        TranslateTransition slide2 = new TranslateTransition();
-        slide2.setDuration(Duration.seconds(.5));
-        slide2.setNode(halfNav_form);
-        slide2.setToX(0);
-
-     
-        slide.setOnFinished((ActionEvent event) -> {
-            arrow_btn.setVisible(false);
-            bars_btn.setVisible(true);
-        });
-        slide2.play();
-        slide1.play();
-        slide.play();
+        nav_form.setVisible(true);
+        halfNav_form.setVisible(false);
+        arrow_btn.setVisible(false);
+        bars_btn.setVisible(true);
     }
 
     public void sliderBars(){
-
-        TranslateTransition slide = new TranslateTransition();
-
-        slide.setDuration(Duration.seconds(0.5));
-        slide.setNode(nav_form);
-        slide.setToX(0);
-
-        TranslateTransition slide1 = new TranslateTransition();
-        slide1.setDuration(Duration.seconds(0.5));
-        slide1.setNode(mainCenter_form);
-        slide1.setToX(0);
-
-        TranslateTransition slide2 = new TranslateTransition();
-        slide2.setDuration(Duration.seconds(.5));
-        slide2.setNode(halfNav_form);
-        slide2.setToX(-77);
-
-        slide.setOnFinished((ActionEvent event) -> {
-            arrow_btn.setVisible(true);
-            bars_btn.setVisible(false);
-        });
-        slide2.play();
-        slide1.play();
-        slide.play();
+        nav_form.setVisible(false);
+        halfNav_form.setVisible(true);
+        arrow_btn.setVisible(true);
+        bars_btn.setVisible(false);
     }
     //qua bo doiiii
 
     @FXML
     public void logout(ActionEvent event) {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Message");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to logout?");
+        Optional<ButtonType> option = alert.showAndWait();
         try {
-            if (event.getSource() == logout_btn) {
-                // TO SWAP FROM DASHBOARD TO LOGIN FORM
-                Parent root = FXMLLoader.load(getClass().getResource("/view/document.fxml"));
+            if (option.get().equals(ButtonType.OK)) {
+                logout_btn.getScene().getWindow().hide();
 
+                Parent root = FXMLLoader.load(getClass().getResource("/view/document.fxml"));
                 Stage stage = new Stage();
                 Scene scene = new Scene(root);
 
@@ -697,19 +582,20 @@ public class DashBoardController implements Initializable {
                 });
 
                 root.setOnMouseDragged((MouseEvent e) -> {
-
                     stage.setX(e.getScreenX() - x);
                     stage.setY(e.getScreenY() - y);
 
+                    stage.setOpacity(.8);
+                });
+
+                root.setOnMouseReleased((MouseEvent e) -> {
+                    stage.setOpacity(1);
                 });
 
                 stage.initStyle(StageStyle.TRANSPARENT);
 
                 stage.setScene(scene);
                 stage.show();
-
-                logout_btn.getScene().getWindow().hide();
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -717,25 +603,35 @@ public class DashBoardController implements Initializable {
     }
 
 public void exit() {
-
         System.exit(0);
-
     }
 
     public void minimize() {
-
         Stage stage = (Stage) minimize.getScene().getWindow();
         stage.setIconified(true);
-
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        showAvailableBooks();
-        showBorrowedBooks();
         displayBorrowerId();
-        displayDate();
+        showAvailableBooks();
         setupSearchField();
+        loadUserInfo();
+        
+        // Initialize wishlist table columns if we're in the wishlist view
+        if (wishlist_tableView != null) {
+            col_wl_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+            col_wl_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+            col_wl_genre.setCellValueFactory(new PropertyValueFactory<>("genres"));
+            col_wl_dateAdded.setCellValueFactory(new PropertyValueFactory<>("dateAdded"));
+        }
+        if (borrowedBooks_tableView != null) {
+            col_bb_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+            col_bb_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+            col_bb_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+            col_bb_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
+            col_bb_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+        }
     }
 
     // Add BorrowedBook class
@@ -934,5 +830,444 @@ public void exit() {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static class availableBooks {
+        private int bookId;
+        private String title;
+        private String authors;
+        private String genres;
+        private int totalCopies;
+        private int availableCopies;
+        private int totalBorrows;
+
+        public availableBooks(int bookId, String title, String authors, String genres, 
+                            int totalCopies, int availableCopies, int totalBorrows) {
+            this.bookId = bookId;
+            this.title = title;
+            this.authors = authors;
+            this.genres = genres;
+            this.totalCopies = totalCopies;
+            this.availableCopies = availableCopies;
+            this.totalBorrows = totalBorrows;
+        }
+
+        public int getBookId() { return bookId; }
+        public String getTitle() { return title; }
+        public String getAuthors() { return authors; }
+        public String getGenres() { return genres; }
+        public int getTotalCopies() { return totalCopies; }
+        public int getAvailableCopies() { return availableCopies; }
+        public int getTotalBorrows() { return totalBorrows; }
+    }
+
+    public class WishlistBook {
+        private int bookId;
+        private String title;
+        private String authors;
+        private String genres;
+        private String dateAdded;
+
+        public WishlistBook(int bookId, String title, String authors, String genres, String dateAdded) {
+            this.bookId = bookId;
+            this.title = title;
+            this.authors = authors;
+            this.genres = genres;
+            this.dateAdded = dateAdded;
+        }
+
+        public int getBookId() { return bookId; }
+        public String getTitle() { return title; }
+        public String getAuthors() { return authors; }
+        public String getGenres() { return genres; }
+        public String getDateAdded() { return dateAdded; }
+    }
+
+    public void addToWishlist() {
+        availableBooks book = availableBooks_tableView.getSelectionModel().getSelectedItem();
+        
+        if (book == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a book to add to wishlist.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            connect = Database.connectDB();
+            
+            // First get the AccountID for the current user
+            String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
+            prepare = connect.prepareStatement(getAccountSql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            
+            if (!result.next()) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Could not find your account information.");
+                alert.showAndWait();
+                return;
+            }
+            
+            int accountId = result.getInt("AccountID");
+
+            // Check if book is already in wishlist
+            String checkSql = "SELECT COUNT(*) as count FROM Wishlist WHERE AccountID = ? AND BookID = ?";
+            prepare = connect.prepareStatement(checkSql);
+            prepare.setInt(1, accountId);
+            prepare.setInt(2, book.getBookId());
+            result = prepare.executeQuery();
+            
+            if (result.next() && result.getInt("count") > 0) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("This book is already in your wishlist.");
+                alert.showAndWait();
+                return;
+            }
+            
+            // Add to wishlist
+            String addSql = "INSERT INTO Wishlist (AccountID, BookID) VALUES (?, ?)";
+            prepare = connect.prepareStatement(addSql);
+            prepare.setInt(1, accountId);
+            prepare.setInt(2, book.getBookId());
+            prepare.executeUpdate();
+
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Success Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Book added to wishlist successfully!");
+            alert.showAndWait();
+
+            // Refresh wishlist if visible
+            if (!availableBooks_form.isVisible()) {
+                showWishlist();
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error adding to wishlist: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    public void removeFromWishlist() {
+        WishlistBook book = wishlist_tableView.getSelectionModel().getSelectedItem();
+        
+        if (book == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a book to remove from wishlist.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Removal");
+        confirmAlert.setHeaderText(null);
+        confirmAlert.setContentText("Are you sure you want to remove this book from your wishlist?");
+
+        if (confirmAlert.showAndWait().get() == ButtonType.OK) {
+            try {
+                connect = Database.connectDB();
+                
+                // Get AccountID
+                String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
+                prepare = connect.prepareStatement(getAccountSql);
+                prepare.setString(1, getData.borrowerId);
+                result = prepare.executeQuery();
+                
+                if (!result.next()) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Could not find your account information.");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                int accountId = result.getInt("AccountID");
+
+                // Remove from wishlist
+                String removeSql = "DELETE FROM Wishlist WHERE AccountID = ? AND BookID = ?";
+                prepare = connect.prepareStatement(removeSql);
+                prepare.setInt(1, accountId);
+                prepare.setInt(2, book.getBookId());
+                prepare.executeUpdate();
+
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Book removed from wishlist successfully!");
+                alert.showAndWait();
+
+                showWishlist();
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Error removing from wishlist: " + e.getMessage());
+                alert.showAndWait();
+            }
+        }
+    }
+
+    public ObservableList<WishlistBook> getWishlistBooks() {
+        ObservableList<WishlistBook> wishlistBooks = FXCollections.observableArrayList();
+        
+        String sql = "SELECT b.BookID, b.Title, " +
+                    "GROUP_CONCAT(DISTINCT a.FullName SEPARATOR ', ') as Authors, " +
+                    "GROUP_CONCAT(DISTINCT g.Name SEPARATOR ', ') as Genres, " +
+                    "w.DateAdded " +
+                    "FROM Wishlist w " +
+                    "JOIN Book b ON w.BookID = b.BookID " +
+                    "JOIN UserAccount ua ON w.AccountID = ua.AccountID " +
+                    "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                    "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "LEFT JOIN BookGenre bg ON b.BookID = bg.BookID " +
+                    "LEFT JOIN Genre g ON bg.GenreID = g.GenreID " +
+                    "WHERE ua.BorrowerID = ? " +
+                    "GROUP BY b.BookID, w.DateAdded";
+        
+        connect = Database.connectDB();
+        
+        try {
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            
+            while (result.next()) {
+                WishlistBook book = new WishlistBook(
+                    result.getInt("BookID"),
+                    result.getString("Title"),
+                    result.getString("Authors"),
+                    result.getString("Genres"),
+                    result.getString("DateAdded")
+                );
+                wishlistBooks.add(book);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return wishlistBooks;
+    }
+
+    public void showWishlist() {
+        ObservableList<WishlistBook> wishlistBooks = getWishlistBooks();
+        
+        col_wl_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        col_wl_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+        col_wl_genre.setCellValueFactory(new PropertyValueFactory<>("genres"));
+        col_wl_dateAdded.setCellValueFactory(new PropertyValueFactory<>("dateAdded"));
+        
+        wishlist_tableView.setItems(wishlistBooks);
+    }
+
+    private void loadUserInfo() {
+        try {
+            connect = Database.connectDB();
+            
+            String sql = "SELECT b.FullName, b.Phone, ua.Username " +
+                        "FROM Borrower b " +
+                        "JOIN UserAccount ua ON b.BorrowerID = ua.BorrowerID " +
+                        "WHERE b.BorrowerID = ?";
+            
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            
+            if (result.next()) {
+                settings_fullname.setText(result.getString("FullName"));
+                settings_phone.setText(result.getString("Phone"));
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void savePersonalInfo() {
+        String fullName = settings_fullname.getText().trim();
+        String phone = settings_phone.getText().trim();
+        
+        if (fullName.isEmpty()) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Please enter your full name");
+            alert.showAndWait();
+            return;
+        }
+        
+        try {
+            connect = Database.connectDB();
+            
+            String sql = "UPDATE Borrower SET FullName = ?, Phone = ? WHERE BorrowerID = ?";
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, fullName);
+            prepare.setString(2, phone);
+            prepare.setString(3, getData.borrowerId);
+            
+            prepare.executeUpdate();
+            
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Success Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Personal information updated successfully!");
+            alert.showAndWait();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error updating personal information: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    public void changePassword() {
+        String currentPassword = settings_currentPassword.getText();
+        String newPassword = settings_newPassword.getText();
+        String confirmPassword = settings_confirmPassword.getText();
+        
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Please fill in all password fields");
+            alert.showAndWait();
+            return;
+        }
+        
+        if (!newPassword.equals(confirmPassword)) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("New password and confirm password do not match");
+            alert.showAndWait();
+            return;
+        }
+        
+        try {
+            connect = Database.connectDB();
+            
+            // Verify current password
+            String checkSql = "SELECT Password FROM UserAccount WHERE BorrowerID = ?";
+            prepare = connect.prepareStatement(checkSql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            
+            if (result.next()) {
+                String storedPassword = result.getString("Password");
+                if (!currentPassword.equals(storedPassword)) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Current password is incorrect");
+                    alert.showAndWait();
+                    return;
+                }
+            }
+            
+            // Update password
+            String updateSql = "UPDATE UserAccount SET Password = ? WHERE BorrowerID = ?";
+            prepare = connect.prepareStatement(updateSql);
+            prepare.setString(1, newPassword);
+            prepare.setString(2, getData.borrowerId);
+            prepare.executeUpdate();
+            
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Success Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Password changed successfully!");
+            alert.showAndWait();
+            
+            // Clear password fields
+            settings_currentPassword.clear();
+            settings_newPassword.clear();
+            settings_confirmPassword.clear();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error changing password: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    public static class BorrowedBookDisplay {
+        private String title;
+        private String authors;
+        private String borrowDate;
+        private String returnDate;
+        private String status;
+        public BorrowedBookDisplay(String title, String authors, String borrowDate, String returnDate, String status) {
+            this.title = title;
+            this.authors = authors;
+            this.borrowDate = borrowDate;
+            this.returnDate = returnDate;
+            this.status = status;
+        }
+        public String getTitle() { return title; }
+        public String getAuthors() { return authors; }
+        public String getBorrowDate() { return borrowDate; }
+        public String getReturnDate() { return returnDate; }
+        public String getStatus() { return status; }
+    }
+
+    public ObservableList<BorrowedBookDisplay> getAllBorrowedBooks() {
+        ObservableList<BorrowedBookDisplay> list = FXCollections.observableArrayList();
+        String sql = "SELECT b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, br.BorrowDate, br.ReturnDate " +
+                "FROM Book b " +
+                "JOIN BorrowEntry br ON b.BookID = br.BookID " +
+                "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                "WHERE br.BorrowerID = ? " +
+                "GROUP BY b.BookID, br.BorrowDate, br.ReturnDate";
+        connect = Database.connectDB();
+        try {
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, getData.borrowerId);
+            result = prepare.executeQuery();
+            while (result.next()) {
+                String returnDate = result.getString("ReturnDate");
+                String status = (returnDate == null || returnDate.isEmpty()) ? "Borrowing" : "Returned";
+                list.add(new BorrowedBookDisplay(
+                    result.getString("Title"),
+                    result.getString("Authors"),
+                    result.getString("BorrowDate"),
+                    returnDate == null ? "" : returnDate,
+                    status
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public void showAllBorrowedBooks() {
+        ObservableList<BorrowedBookDisplay> list = getAllBorrowedBooks();
+        col_bb_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        col_bb_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+        col_bb_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+        col_bb_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
+        col_bb_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+        borrowedBooks_tableView.setItems(list);
     }
 }

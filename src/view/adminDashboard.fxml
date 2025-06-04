@@ -34,7 +34,7 @@
                      </graphic>
                   </Button>
                   <Line endX="1255.8333740234375" endY="3.814697265625E-6" layoutX="143.0" layoutY="37.0" startX="-143.00001525878906" startY="3.814697265625E-6" />
-                  <Label fx:id="currentForm_label" layoutX="1143.0" layoutY="50.0" styleClass="form-title" text="Manage Books">
+                  <Label fx:id="currentForm_label" alignment="CENTER_RIGHT" layoutX="800.0" layoutY="50.0" prefWidth="500.0" styleClass="form-title" text="Manage Books">
                      <font>
                         <Font name="Segoe UI" size="28.0" />
                      </font>
@@ -94,7 +94,7 @@
                <children>
                   <AnchorPane fx:id="manageBooks_form" prefHeight="700.0" prefWidth="1100.0">
                      <children>
-                        <TableView fx:id="books_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0" visible="false">
+                        <TableView fx:id="books_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_bookTitle" prefWidth="300.0" text="Title" />
                               <TableColumn fx:id="col_author" prefWidth="300.0" text="Author" />

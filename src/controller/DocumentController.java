@@ -84,6 +84,16 @@ public class DocumentController implements Initializable {
                 if(result.next()){
                     getData.borrowerId = result.getString("BorrowerID");
                     getData.borrowerName = result.getString("FullName");
+                    // Lấy AccountID
+                    String getAccountIdSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
+                    PreparedStatement ps = connect.prepareStatement(getAccountIdSql);
+                    ps.setString(1, getData.borrowerId);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        getData.accountId = rs.getInt("AccountID");
+                    }
+                    rs.close();
+                    ps.close();
                     
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Information Message");

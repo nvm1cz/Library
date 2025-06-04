@@ -76,7 +76,7 @@ public class NotificationController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        loadBorrowedBooks();
+        loadAllNotifications();
         setupStars();
     }
 
@@ -106,23 +106,34 @@ public class NotificationController implements Initializable {
         }
     }
     
-    private void loadBorrowedBooks() {
-        ObservableList<HBox> borrowedBooks = FXCollections.observableArrayList();
-        
-        String sql = "SELECT be.EntryID, b.Title, be.ReturnDate, " +
-                    "(SELECT COUNT(*) FROM Review r WHERE r.EntryID = be.EntryID) > 0 as IsRated " +
-                    "FROM BorrowEntry be " +
-                    "JOIN Book b ON be.BookID = b.BookID " +
-                    "WHERE be.BorrowerID = ? AND be.ReturnDate IS NOT NULL " +
-                    "ORDER BY be.ReturnDate DESC";
-                    
+    private void loadAllNotifications() {
+        ObservableList<HBox> allNotis = FXCollections.observableArrayList();
+        // 1. Thông báo hệ thống
+        String sql = "SELECT Message, DateCreated, IsRead FROM Notification WHERE AccountID = ? ORDER BY DateCreated DESC";
         connect = Database.connectDB();
-        
         try {
             prepare = connect.prepareStatement(sql);
-            prepare.setString(1, getData.borrowerId);
+            prepare.setInt(1, model.getData.accountId);
             result = prepare.executeQuery();
-            
+            while (result.next()) {
+                String message = result.getString("Message");
+                String date = result.getString("DateCreated");
+                HBox box = new HBox(10);
+                box.setAlignment(Pos.CENTER_LEFT);
+                Label msgLabel = new Label(message + " (" + date + ")");
+                msgLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #222; -fx-font-weight: bold; -fx-opacity: 1;");
+                box.getChildren().add(msgLabel);
+                allNotis.add(box);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // 2. Sách đã trả (cho phép vote)
+        String sql2 = "SELECT be.EntryID, b.Title, be.ReturnDate, (SELECT COUNT(*) FROM Review r WHERE r.EntryID = be.EntryID) > 0 as IsRated FROM BorrowEntry be JOIN Book b ON be.BookID = b.BookID WHERE be.BorrowerID = ? AND be.ReturnDate IS NOT NULL ORDER BY be.ReturnDate DESC";
+        try {
+            prepare = connect.prepareStatement(sql2);
+            prepare.setString(1, model.getData.borrowerId);
+            result = prepare.executeQuery();
             while(result.next()) {
                 HBox bookBox = createBookBox(
                     result.getInt("EntryID"),
@@ -130,14 +141,14 @@ public class NotificationController implements Initializable {
                     result.getDate("ReturnDate").toLocalDate(),
                     result.getBoolean("IsRated")
                 );
-                borrowedBooks.add(bookBox);
+                allNotis.add(bookBox);
             }
-            
-            notificationList.setItems(borrowedBooks);
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
+        notificationList.setItems(allNotis);
+        notificationList.getSelectionModel().clearSelection();
+        notificationList.setOnMouseClicked(e -> notificationList.getSelectionModel().clearSelection());
     }
     
     private HBox createBookBox(int entryId, String bookTitle, LocalDate returnDate, boolean isRated) {
@@ -229,7 +240,7 @@ public class NotificationController implements Initializable {
             prepare.executeUpdate();
             
             ratingDialog.setVisible(false);
-            loadBorrowedBooks();
+            loadAllNotifications();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -316,7 +327,7 @@ public class NotificationController implements Initializable {
             prepare.executeUpdate();
             
             commentDialog.setVisible(false);
-            loadBorrowedBooks();
+            loadAllNotifications();
             
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Success");
