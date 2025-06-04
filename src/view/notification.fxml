@@ -25,7 +25,7 @@
       </Button>
       
       <!-- Rating Dialog -->
-      <AnchorPane fx:id="ratingDialog" styleClass="rating-dialog" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="50.0">
+      <AnchorPane fx:id="ratingDialog" styleClass="rating-dialog" visible="false" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="50.0">
          <children>
             <VBox spacing="10" styleClass="rating-content">
                <children>

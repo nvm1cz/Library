@@ -225,6 +225,9 @@ public class AdminDashboardController implements Initializable {
     private AnchorPane currentBorrows_form;
 
     @FXML
+    private Label currentForm_label;
+
+    @FXML
     private TableView<CurrentBorrow> currentBorrows_tableView;
 
     @FXML
@@ -276,6 +279,7 @@ public class AdminDashboardController implements Initializable {
             reservations_form.setVisible(false);
             currentBorrows_form.setVisible(false);
             
+            currentForm_label.setText("Manage Books");
             showBooks();
         } else if (event.getSource() == manageUsers_btn) {
             manageBooks_form.setVisible(false);
@@ -284,6 +288,7 @@ public class AdminDashboardController implements Initializable {
             reservations_form.setVisible(false);
             currentBorrows_form.setVisible(false);
             
+            currentForm_label.setText("Manage Users");
             showUsers();
         } else if (event.getSource() == borrowRecords_btn) {
             manageBooks_form.setVisible(false);
@@ -292,6 +297,7 @@ public class AdminDashboardController implements Initializable {
             reservations_form.setVisible(false);
             currentBorrows_form.setVisible(false);
             
+            currentForm_label.setText("Borrow Records");
             showBorrowRecords();
         } else if (event.getSource() == reservations_btn) {
             manageBooks_form.setVisible(false);
@@ -300,6 +306,7 @@ public class AdminDashboardController implements Initializable {
             reservations_form.setVisible(true);
             currentBorrows_form.setVisible(false);
             
+            currentForm_label.setText("Reservations");
             showReservations();
         } else if (event.getSource() == currentBorrows_btn) {
             manageBooks_form.setVisible(false);
@@ -308,6 +315,7 @@ public class AdminDashboardController implements Initializable {
             reservations_form.setVisible(false);
             currentBorrows_form.setVisible(true);
             
+            currentForm_label.setText("Current Borrows");
             showCurrentBorrows();
         }
     }

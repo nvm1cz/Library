@@ -8,6 +8,11 @@ and open the template in the editor.
     Author     : WINDOWS 10
 */
 
+/* Base font styles */
+* {
+    -fx-font-family: "Segoe UI";
+}
+
 .top-form{
     -fx-background-color:#fff;
     -fx-border-color:#000;
@@ -56,29 +61,69 @@ and open the template in the editor.
     -fx-padding:60px 0px 0px 0px;
 }
 
-.nav-btn{
-    -fx-background-color:linear-gradient(to bottom right, #344275, #3a6389);
-    -fx-background-radius:5px;
-    -fx-cursor:hand;
-    -fx-font-size:15px;
-    -fx-text-fill:#fff;
-    -fx-font-family:"Microsoft Sans Serif";
+/* Main title styles */
+.main-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: bold;
+    -fx-font-size: 28px;
 }
 
-/* .nav-btn {
-    -fx-background-color: linear-gradient(to bottom right, #4a5785, #5084b9);
-    -fx-background-radius: 8px;
+/* Navigation button styles */
+.nav-btn {
+    -fx-background-color: linear-gradient(to bottom right, #344275, #3a6389);
+    -fx-background-radius: 5px;
     -fx-cursor: hand;
-    -fx-font-size: 16px;
+    -fx-font-size: 15px;
     -fx-text-fill: #fff;
-    -fx-font-family: "Roboto";
-    -fx-padding: 10px 15px;
-    -fx-transition: all 0.3s ease;
-} */
+    -fx-font-family: "Segoe UI";
+    -fx-font-weight: 600;
+}
 
-.nav-btn:hover{
-    -fx-background-color:linear-gradient(to bottom right, #46589a, #4278a7);
-    -fx-background-radius:5px;
+.nav-btn:hover {
+    -fx-background-color: linear-gradient(to bottom right, #46589a, #4278a7);
+    -fx-background-radius: 5px;
+}
+
+/* Form title styles */
+.form-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+/* Table styles */
+.table-view {
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI";
+}
+
+.table-view .column-header {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10px;
+    -fx-background-color: #f0f0f0;
+}
+
+/* Text field styles */
+.textfield {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-padding: 5px;
+}
+
+/* Button styles */
+.add-btn, .delete-btn, .clear-btn, .update-btn {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+/* Welcome text style */
+.welcome-text {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
 }
 
 .logout-btn{

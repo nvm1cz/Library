@@ -4,7 +4,7 @@
 
 .card-form{
     -fx-background-color:#2a5172;
-    -fx-background-radius:15px;
+    -fx-background-radius:20px;
 }
 
 .close{
@@ -30,19 +30,20 @@
     -fx-text-inner-color:#fff;
     -fx-border-color:#fff;
     -fx-border-width:0px 0px .4px 0px;
-    -fx-font-size:13px;
+    -fx-font-size:16px;
 }
 
 .textfield:focused{
-    -fx-border-width:0px 0px 1px 0px;
+    -fx-border-width:0px 0px 1.5px 0px;
 }
 
 .login-btn{
     -fx-background-color:#468ec2;
-    -fx-background-radius:15px;
+    -fx-background-radius:20px;
     -fx-cursor:hand;
     -fx-text-fill:#fff;
-    -fx-font-size:15px;
+    -fx-font-size:18px;
+    -fx-font-weight:bold;
 }
 
 .login-btn:hover{
@@ -52,12 +53,12 @@
 .switch-btn {
     -fx-background-color: transparent;
     -fx-border-color: #468ec2;
-    -fx-border-radius: 15px;
+    -fx-border-radius: 20px;
     -fx-cursor: hand;
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
 }
 
 .switch-btn:hover {
     -fx-background-color: #468ec2;
-    -fx-background-radius: 15px;
+    -fx-background-radius: 20px;
 }

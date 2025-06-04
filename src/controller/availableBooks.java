@@ -64,4 +64,4 @@ public class availableBooks {
     public void setTotalBorrows(int totalBorrows) {
         this.totalBorrows = totalBorrows;
     }
-} 
+}

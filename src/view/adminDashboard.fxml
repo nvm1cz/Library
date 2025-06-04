@@ -9,162 +9,189 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminDashboardController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminDashboardController">
    <children>
-      <BorderPane layoutX="235.0" layoutY="155.0" prefHeight="600.0" prefWidth="986.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <BorderPane prefHeight="800.0" prefWidth="1400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>
-            <AnchorPane prefHeight="79.0" prefWidth="986.0" styleClass="semiTop-form" stylesheets="@designDashboard.css">
+            <AnchorPane prefHeight="100.0" prefWidth="1400.0" styleClass="semiTop-form" stylesheets="@designDashboard.css">
                <children>
-                  <Label layoutX="72.0" layoutY="25.0" text="Library Management - Admin">
+                  <Label layoutX="72.0" layoutY="50.0" styleClass="main-title" text="Library Management - Admin">
                      <font>
-                        <Font name="Segoe UI Black" size="20.0" />
+                        <Font name="Segoe UI" size="28.0" />
                      </font>
                   </Label>
-                  <Button fx:id="close" layoutX="920.0" layoutY="2.0" mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="50.0" styleClass="close-btn" stylesheets="@designDashboard.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
+                  <Button fx:id="close" layoutX="1330.0" layoutY="2.0" mnemonicParsing="false" onAction="#exit" prefHeight="35.0" prefWidth="60.0" styleClass="close-btn" stylesheets="@designDashboard.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
                      <graphic>
-                        <FontAwesomeIcon fill="BLACK" glyphName="CLOSE" size="1.5em" />
+                        <FontAwesomeIcon glyphName="CLOSE" size="2em" />
                      </graphic>
                   </Button>
-                  <Button fx:id="minimize" layoutX="884.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="25.0" prefWidth="50.0" styleClass="minimize-btn" stylesheets="@designDashboard.css">
+                  <Button fx:id="minimize" layoutX="1278.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="35.0" prefWidth="60.0" styleClass="minimize-btn" stylesheets="@designDashboard.css">
                      <graphic>
-                        <FontAwesomeIcon fill="BLACK" glyphName="MINUS" size="1.5em" />
+                        <FontAwesomeIcon glyphName="MINUS" size="2em" />
                      </graphic>
                   </Button>
+                  <Line endX="1255.8333740234375" endY="3.814697265625E-6" layoutX="143.0" layoutY="37.0" startX="-143.00001525878906" startY="3.814697265625E-6" />
+                  <Label fx:id="currentForm_label" layoutX="1143.0" layoutY="50.0" styleClass="form-title" text="Manage Books">
+                     <font>
+                        <Font name="Segoe UI" size="28.0" />
+                     </font>
+                  </Label>
                </children>
             </AnchorPane>
          </top>
          <left>
-            <AnchorPane prefHeight="521.0" prefWidth="220.0" styleClass="nav-form" stylesheets="@designDashboard.css">
+            <AnchorPane prefHeight="700.0" prefWidth="300.0" styleClass="nav-form" stylesheets="@designDashboard.css">
                <children>
-                  <FontAwesomeIcon fill="WHITE" glyphName="USER_SECRET" layoutX="85.0" layoutY="88.0" size="5em" />
-                  <Label layoutX="45.0" layoutY="121.0" text="Welcome Admin" textFill="WHITE">
+                  <FontAwesomeIcon fill="WHITE" glyphName="USER_SECRET" layoutX="120.0" layoutY="120.0" size="7em" />
+                  <Label layoutX="65.0" layoutY="160.0" styleClass="welcome-text" text="Welcome Admin" textFill="WHITE">
                      <font>
-                        <Font name="Microsoft Sans Serif" size="18.0" />
+                        <Font name="Segoe UI" size="24.0" />
                      </font>
                   </Label>
-                  <Button fx:id="manageBooks_btn" layoutX="25.0" layoutY="180.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Books" />
-                  <Button fx:id="manageUsers_btn" layoutX="25.0" layoutY="230.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Users" />
-                  <Button fx:id="borrowRecords_btn" layoutX="25.0" layoutY="280.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Borrow Records" />
-                  <Button fx:id="reservations_btn" layoutX="25.0" layoutY="330.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Reservations" />
-                  <Button fx:id="currentBorrows_btn" layoutX="25.0" layoutY="380.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Current Borrows" />
-                  <Button fx:id="logout_btn" layoutX="25.0" layoutY="466.0" mnemonicParsing="false" onAction="#logout" prefHeight="35.0" prefWidth="123.0" styleClass="logout-btn" stylesheets="@designDashboard.css">
+                  <Button fx:id="manageBooks_btn" layoutX="30.0" layoutY="240.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="45.0" prefWidth="240.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Books">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="manageUsers_btn" layoutX="30.0" layoutY="300.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="45.0" prefWidth="240.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Users">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="borrowRecords_btn" layoutX="30.0" layoutY="360.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="45.0" prefWidth="240.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Borrow Records">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="reservations_btn" layoutX="30.0" layoutY="420.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="45.0" prefWidth="240.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Reservations">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="currentBorrows_btn" layoutX="30.0" layoutY="480.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="45.0" prefWidth="240.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Current Borrows">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="logout_btn" layoutX="30.0" layoutY="620.0" mnemonicParsing="false" onAction="#logout" prefHeight="45.0" prefWidth="160.0" styleClass="logout-btn" stylesheets="@designDashboard.css">
                      <graphic>
                         <Label text="Sign out" textFill="WHITE">
                            <font>
-                              <Font size="13.0" />
+                              <Font size="18.0" />
                            </font>
                         </Label>
                      </graphic>
                   </Button>
-                  <FontAwesomeIcon fill="WHITE" glyphName="SIGN_OUT" layoutX="37.0" layoutY="491.0" size="1.5em" text="" />
+                  <FontAwesomeIcon fill="WHITE" glyphName="SIGN_OUT" layoutX="45.0" layoutY="650.0" size="2em" />
                </children>
             </AnchorPane>
          </left>
          <center>
-            <AnchorPane fx:id="mainCenter_form" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <AnchorPane fx:id="mainCenter_form" prefHeight="700.0" prefWidth="1100.0">
                <children>
-                  <AnchorPane fx:id="manageBooks_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="manageBooks_form" prefHeight="700.0" prefWidth="1100.0">
                      <children>
-                        <TableView fx:id="books_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                        <TableView fx:id="books_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0" visible="false">
                            <columns>
-                              <TableColumn fx:id="col_bookTitle" prefWidth="200.0" text="Title" />
-                              <TableColumn fx:id="col_author" prefWidth="180.0" text="Author" />
-                              <TableColumn fx:id="col_totalCopies" prefWidth="120.0" text="Total Copies" />
-                              <TableColumn fx:id="col_availableCopies" prefWidth="120.0" text="Available" />
-                              <TableColumn fx:id="col_totalBorrows" prefWidth="118.0" text="Total Borrows" />
+                              <TableColumn fx:id="col_bookTitle" prefWidth="300.0" text="Title" />
+                              <TableColumn fx:id="col_author" prefWidth="300.0" text="Author" />
+                              <TableColumn fx:id="col_totalCopies" prefWidth="150.0" text="Total Copies" />
+                              <TableColumn fx:id="col_availableCopies" prefWidth="150.0" text="Available" />
+                              <TableColumn fx:id="col_totalBorrows" prefWidth="160.0" text="Total Borrows" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                        <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <TextField fx:id="book_title" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Book Title" styleClass="textfield" />
-                              <TextField fx:id="book_author" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="180.0" promptText="Author" styleClass="textfield" />
-                              <TextField fx:id="book_totalCopies" layoutX="414.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="Total Copies" styleClass="textfield" />
-                              <Button fx:id="addBook_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBook" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Book" />
-                              <Button fx:id="deleteBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
-                              <Button fx:id="clearBook_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                              <TextField fx:id="book_title" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Book Title" styleClass="textfield" />
+                              <TextField fx:id="book_author" layoutX="340.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Author" styleClass="textfield" />
+                              <TextField fx:id="book_totalCopies" layoutX="660.0" layoutY="15.0" prefHeight="35.0" prefWidth="150.0" promptText="Total Copies" styleClass="textfield" />
+                              <Button fx:id="addBook_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#addBook" prefHeight="35.0" prefWidth="140.0" styleClass="add-btn" text="Add Book" />
+                              <Button fx:id="deleteBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="35.0" prefWidth="140.0" styleClass="delete-btn" text="Delete" />
+                              <Button fx:id="clearBook_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="manageUsers_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="manageUsers_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="users_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                        <TableView fx:id="users_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
                            <columns>
-                              <TableColumn fx:id="col_accountId" prefWidth="80.0" text="Account ID" />
-                              <TableColumn fx:id="col_username" prefWidth="150.0" text="Username" />
-                              <TableColumn fx:id="col_password" prefWidth="150.0" text="Password" />
-                              <TableColumn fx:id="col_borrowerId" prefWidth="150.0" text="Borrower ID" />
-                              <TableColumn fx:id="col_borrowerName" prefWidth="208.0" text="Borrower Name" />
+                              <TableColumn fx:id="col_accountId" prefWidth="100.0" text="Account ID" />
+                              <TableColumn fx:id="col_username" prefWidth="200.0" text="Username" />
+                              <TableColumn fx:id="col_password" prefWidth="200.0" text="Password" />
+                              <TableColumn fx:id="col_borrowerId" prefWidth="200.0" text="Borrower ID" />
+                              <TableColumn fx:id="col_borrowerName" prefWidth="360.0" text="Borrower Name" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                        <AnchorPane layoutX="20.0" layoutY="579.0" prefHeight="109.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <TextField fx:id="username_field" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Username" styleClass="textfield" />
-                              <TextField fx:id="password_field" layoutX="174.0" layoutY="14.0" prefHeight="30.0" prefWidth="150.0" promptText="Password" styleClass="textfield" />
-                              <ComboBox fx:id="userType_combo" layoutX="334.0" layoutY="14.0" prefHeight="30.0" prefWidth="120.0" promptText="User Type" />
-                              <TextField fx:id="borrower_name" layoutX="464.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Borrower Name" styleClass="textfield" />
-                              <Button fx:id="addUser_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addUser" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add User" />
-                              <Button fx:id="updateUser_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#updateUser" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Update" />
-                              <Button fx:id="deleteUser_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#deleteUser" prefHeight="30.0" prefWidth="100.0" styleClass="delete-btn" text="Delete" />
-                              <Button fx:id="clearUser_btn" layoutX="344.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearUserFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                              <TextField fx:id="username_field" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="200.0" promptText="Username" styleClass="textfield" />
+                              <TextField fx:id="password_field" layoutX="240.0" layoutY="15.0" prefHeight="35.0" prefWidth="200.0" promptText="Password" styleClass="textfield" />
+                              <ComboBox fx:id="userType_combo" layoutX="460.0" layoutY="15.0" prefHeight="35.0" prefWidth="160.0" promptText="User Type" />
+                              <TextField fx:id="borrower_name" layoutX="640.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Borrower Name" styleClass="textfield" />
+                              <Button fx:id="addUser_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#addUser" prefHeight="35.0" prefWidth="140.0" styleClass="add-btn" text="Add User" />
+                              <Button fx:id="updateUser_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#updateUser" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Update" />
+                              <Button fx:id="deleteUser_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#deleteUser" prefHeight="35.0" prefWidth="140.0" styleClass="delete-btn" text="Delete" />
+                              <Button fx:id="clearUser_btn" layoutX="500.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearUserFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="borrowRecords_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="borrowRecords_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="borrow_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                        <TableView fx:id="borrow_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
                            <columns>
-                              <TableColumn fx:id="col_borrowId" prefWidth="70.0" text="ID" />
-                              <TableColumn fx:id="col_borrowName" prefWidth="120.0" text="Borrower" />
-                              <TableColumn fx:id="col_borrowBook" prefWidth="200.0" text="Book" />
-                              <TableColumn fx:id="col_borrowDate" prefWidth="120.0" text="Borrow Date" />
-                              <TableColumn fx:id="col_returnDate" prefWidth="120.0" text="Return Date" />
-                              <TableColumn fx:id="col_borrowStatus" prefWidth="108.0" text="Status" />
+                              <TableColumn fx:id="col_borrowId" prefWidth="100.0" text="ID" />
+                              <TableColumn fx:id="col_borrowName" prefWidth="200.0" text="Borrower" />
+                              <TableColumn fx:id="col_borrowBook" prefWidth="360.0" text="Book" />
+                              <TableColumn fx:id="col_borrowDate" prefWidth="160.0" text="Borrow Date" />
+                              <TableColumn fx:id="col_returnDate" prefWidth="160.0" text="Return Date" />
+                              <TableColumn fx:id="col_borrowStatus" prefWidth="80.0" text="Status" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                        <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <ComboBox fx:id="borrower_combo" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Borrower" />
-                              <ComboBox fx:id="book_combo" layoutX="224.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Select Book" />
-                              <Button fx:id="addBorrow_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#addBorrow" prefHeight="30.0" prefWidth="100.0" styleClass="add-btn" text="Add Borrow" />
-                              <Button fx:id="returnBook_btn" layoutX="124.0" layoutY="50.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="30.0" prefWidth="100.0" styleClass="update-btn" text="Return Book" />
-                              <Button fx:id="clearBorrow_btn" layoutX="234.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                              <ComboBox fx:id="borrower_combo" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Select Borrower" />
+                              <ComboBox fx:id="book_combo" layoutX="340.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Select Book" />
+                              <Button fx:id="addBorrow_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#addBorrow" prefHeight="35.0" prefWidth="140.0" styleClass="add-btn" text="Add Borrow" />
+                              <Button fx:id="returnBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Return Book" />
+                              <Button fx:id="clearBorrow_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="reservations_form" prefHeight="521.0" prefWidth="766.0" visible="false">
+                  <AnchorPane fx:id="reservations_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="reservations_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
+                        <TableView fx:id="reservations_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
                            <columns>
-                              <TableColumn fx:id="col_reservationId" prefWidth="70.0" text="ID" />
-                              <TableColumn fx:id="col_reservationUser" prefWidth="186.6666259765625" text="User" />
-                              <TableColumn fx:id="col_reservationBook" prefWidth="163.3333740234375" text="Book" />
-                              <TableColumn fx:id="col_reservationDate" prefWidth="160.66680908203125" text="Date" />
-                              <TableColumn fx:id="col_reservationStatus" prefWidth="155.9998779296875" text="Status" />
+                              <TableColumn fx:id="col_reservationId" prefWidth="100.0" text="ID" />
+                              <TableColumn fx:id="col_reservationUser" prefWidth="240.0" text="User" />
+                              <TableColumn fx:id="col_reservationBook" prefWidth="360.0" text="Book" />
+                              <TableColumn fx:id="col_reservationDate" prefWidth="180.0" text="Date" />
+                              <TableColumn fx:id="col_reservationStatus" prefWidth="180.0" text="Status" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                        <AnchorPane layoutX="20.0" layoutY="583.0" prefHeight="105.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <ComboBox fx:id="reservation_status_combo" layoutX="14.0" layoutY="14.0" prefHeight="30.0" prefWidth="200.0" promptText="Change Status" />
-                              <Button fx:id="updateReservation_btn" layoutX="14.0" layoutY="50.0" mnemonicParsing="false" onAction="#updateReservationStatus" prefHeight="30.0" prefWidth="150.0" styleClass="update-btn" text="Update Status" />
-                              <Button fx:id="clearReservation_btn" layoutX="174.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                              <ComboBox fx:id="reservation_status_combo" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Change Status" />
+                              <Button fx:id="updateReservation_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#updateReservationStatus" prefHeight="35.0" prefWidth="200.0" styleClass="update-btn" text="Update Status" />
+                              <Button fx:id="clearReservation_btn" layoutX="240.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane fx:id="currentBorrows_form" prefHeight="600.0" prefWidth="873.0">
+                  <AnchorPane fx:id="currentBorrows_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="currentBorrows_tableView" layoutX="20.0" layoutY="20.0" prefHeight="492.0" prefWidth="839.0">
+                        <TableView fx:id="currentBorrows_tableView" layoutX="20.0" layoutY="20.0" prefHeight="660.0" prefWidth="1060.0">
                            <columns>
-                              <TableColumn fx:id="col_currentBorrowId" prefWidth="110.66667175292969" text="Entry ID" />
-                              <TableColumn fx:id="col_currentBorrowerId" prefWidth="109.33331298828125" text="Borrower ID" />
-                              <TableColumn fx:id="col_currentBorrowerName" prefWidth="200.0" text="Borrower Name" />
-                              <TableColumn fx:id="col_currentBookTitle" prefWidth="242.66668701171875" text="Book Title" />
-                              <TableColumn fx:id="col_currentBorrowDate" prefWidth="197.33319091796875" text="Borrow Date" />
+                              <TableColumn fx:id="col_currentBorrowId" prefWidth="120.0" text="Entry ID" />
+                              <TableColumn fx:id="col_currentBorrowerId" prefWidth="160.0" text="Borrower ID" />
+                              <TableColumn fx:id="col_currentBorrowerName" prefWidth="280.0" text="Borrower Name" />
+                              <TableColumn fx:id="col_currentBookTitle" prefWidth="320.0" text="Book Title" />
+                              <TableColumn fx:id="col_currentBorrowDate" prefWidth="180.0" text="Borrow Date" />
                            </columns>
                         </TableView>
                      </children>
