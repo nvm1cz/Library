@@ -4,17 +4,21 @@ public class availableBooks {
     private int bookId;
     private String title;
     private String authors;
+    private String genres;
     private int totalCopies;
     private int availableCopies;
     private int totalBorrows;
+    private double avgRating;
 
-    public availableBooks(int bookId, String title, String authors, int totalCopies, int availableCopies, int totalBorrows) {
+    public availableBooks(int bookId, String title, String authors, String genres, int totalCopies, int availableCopies, int totalBorrows, double avgRating) {
         this.bookId = bookId;
         this.title = title;
         this.authors = authors;
+        this.genres = genres;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
         this.totalBorrows = totalBorrows;
+        this.avgRating = avgRating;
     }
 
     public int getBookId() {
@@ -29,6 +33,10 @@ public class availableBooks {
         return authors;
     }
 
+    public String getGenres() {
+        return genres;
+    }
+
     public int getTotalCopies() {
         return totalCopies;
     }
@@ -39,6 +47,10 @@ public class availableBooks {
 
     public int getTotalBorrows() {
         return totalBorrows;
+    }
+
+    public double getAvgRating() {
+        return avgRating;
     }
 
     public void setBookId(int bookId) {
@@ -53,6 +65,10 @@ public class availableBooks {
         this.authors = authors;
     }
 
+    public void setGenres(String genres) {
+        this.genres = genres;
+    }
+
     public void setTotalCopies(int totalCopies) {
         this.totalCopies = totalCopies;
     }
@@ -63,5 +79,9 @@ public class availableBooks {
 
     public void setTotalBorrows(int totalBorrows) {
         this.totalBorrows = totalBorrows;
+    }
+
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
     }
 } 

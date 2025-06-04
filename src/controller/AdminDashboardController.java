@@ -38,6 +38,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 
 public class AdminDashboardController implements Initializable {
 
@@ -85,6 +87,9 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private TableColumn<availableBooks, Integer> col_totalBorrows;
+
+    @FXML
+    private TableColumn<availableBooks, String> col_genre;
 
     @FXML
     private AnchorPane manageUsers_form;
@@ -245,6 +250,18 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private TableColumn<CurrentBorrow, LocalDateTime> col_currentBorrowDate;
 
+    @FXML
+    private ComboBox<String> searchTypeCombo;
+
+    @FXML
+    private TextField search_field;
+
+    @FXML
+    private TextField book_genre;
+
+    @FXML
+    private TableColumn<availableBooks, Double> col_avgRating;
+
     private Connection connect;
     private PreparedStatement prepare;
     private Statement statement;
@@ -320,52 +337,96 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    public ObservableList<availableBooks> booksList() {
+    public ObservableList<availableBooks> booksList(String searchTerm, String searchType) {
         ObservableList<availableBooks> bookList = FXCollections.observableArrayList();
-        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
-                    "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(DISTINCT a.FullName SEPARATOR ', ') as Authors, " +
+                    "GROUP_CONCAT(DISTINCT g.Name SEPARATOR ', ') as Genres, " +
+                    "b.TotalCopies, b.AvailableCopies, b.TotalBorrows, " +
+                    "AVG(r.Rating) as AvgRating " +
                     "FROM Book b " +
                     "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
                     "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
-                    "GROUP BY b.BookID";
-        
+                    "LEFT JOIN BookGenre bg ON b.BookID = bg.BookID " +
+                    "LEFT JOIN Genre g ON bg.GenreID = g.GenreID " +
+                    "LEFT JOIN BorrowEntry be ON b.BookID = be.BookID " +
+                    "LEFT JOIN Review r ON be.EntryID = r.EntryID " +
+                    "WHERE 1=1";
+        if (searchTerm != null && !searchTerm.trim().isEmpty() && searchType != null) {
+            switch (searchType) {
+                case "Title":
+                    sql += " AND LOWER(b.Title) LIKE LOWER(?)";
+                    break;
+                case "Author":
+                    sql += " AND LOWER(a.FullName) LIKE LOWER(?)";
+                    break;
+                case "Genre":
+                    sql += " AND LOWER(g.Name) LIKE LOWER(?)";
+                    break;
+                default:
+                    sql += " AND (LOWER(b.Title) LIKE LOWER(?) OR LOWER(a.FullName) LIKE LOWER(?) OR LOWER(g.Name) LIKE LOWER(?))";
+            }
+        }
+        sql += " GROUP BY b.BookID";
         connect = Database.connectDB();
-        
         try {
             prepare = connect.prepareStatement(sql);
+            if (searchTerm != null && !searchTerm.trim().isEmpty() && searchType != null) {
+                String searchPattern = "%" + searchTerm.trim() + "%";
+                switch (searchType) {
+                    case "Title":
+                    case "Author":
+                    case "Genre":
+                        prepare.setString(1, searchPattern);
+                        break;
+                    default:
+                        prepare.setString(1, searchPattern);
+                        prepare.setString(2, searchPattern);
+                        prepare.setString(3, searchPattern);
+                }
+            }
             result = prepare.executeQuery();
-            
-            availableBooks book;
-            
             while (result.next()) {
-                book = new availableBooks(
+                availableBooks book = new availableBooks(
                         result.getInt("BookID"),
                         result.getString("Title"),
                         result.getString("Authors"),
+                        result.getString("Genres"),
                         result.getInt("TotalCopies"),
                         result.getInt("AvailableCopies"),
-                        result.getInt("TotalBorrows")
+                        result.getInt("TotalBorrows"),
+                        result.getDouble("AvgRating")
                 );
                 bookList.add(book);
             }
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         return bookList;
     }
 
     public void showBooks() {
-        ObservableList<availableBooks> listBooks = booksList();
-        
+        String searchTerm = search_field != null ? search_field.getText() : null;
+        String searchType = searchTypeCombo != null ? searchTypeCombo.getValue() : null;
+        ObservableList<availableBooks> listBooks = booksList(searchTerm, searchType);
         col_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         col_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
+        col_genre.setCellValueFactory(new PropertyValueFactory<>("genres"));
         col_totalCopies.setCellValueFactory(new PropertyValueFactory<>("totalCopies"));
         col_availableCopies.setCellValueFactory(new PropertyValueFactory<>("availableCopies"));
         col_totalBorrows.setCellValueFactory(new PropertyValueFactory<>("totalBorrows"));
-        
+        col_avgRating.setCellValueFactory(new PropertyValueFactory<>("avgRating"));
         books_tableView.setItems(listBooks);
+    }
+
+    @FXML
+    public void searchBooks() {
+        showBooks();
+    }
+
+    @FXML
+    public void clearSearch() {
+        if (search_field != null) search_field.clear();
+        showBooks();
     }
 
     public ObservableList<BorrowEntry> borrowList() {
@@ -378,7 +439,7 @@ public class AdminDashboardController implements Initializable {
         
         connect = Database.connectDB();
         
-        try {
+        try { 
             prepare = connect.prepareStatement(sql);
             result = prepare.executeQuery();
             
@@ -441,11 +502,14 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void loadAvailableBooks() {
-        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(DISTINCT a.FullName SEPARATOR ', ') as Authors, " +
+                    "GROUP_CONCAT(DISTINCT g.Name SEPARATOR ', ') as Genres, " +
                     "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
                     "FROM Book b " +
                     "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
                     "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "LEFT JOIN BookGenre bg ON b.BookID = bg.BookID " +
+                    "LEFT JOIN Genre g ON bg.GenreID = g.GenreID " +
                     "WHERE b.AvailableCopies > 0 " +
                     "GROUP BY b.BookID " +
                     "ORDER BY b.Title";
@@ -461,9 +525,11 @@ public class AdminDashboardController implements Initializable {
                     result.getInt("BookID"),
                     result.getString("Title"),
                     result.getString("Authors"),
+                    result.getString("Genres"),
                     result.getInt("TotalCopies"),
                     result.getInt("AvailableCopies"),
-                    result.getInt("TotalBorrows")
+                    result.getInt("TotalBorrows"),
+                    0.0 // avgRating mặc định cho combobox
                 ));
             }
             book_combo.setItems(books);
@@ -619,83 +685,29 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void addBook() {
-        String sqlBook = "INSERT INTO Book (Title, TotalCopies, AvailableCopies, TotalBorrows) VALUES (?, ?, ?, 0)";
-        String sqlAuthor = "INSERT INTO Author (FullName) VALUES (?) ON DUPLICATE KEY UPDATE AuthorID=LAST_INSERT_ID(AuthorID)";
-        String sqlBookAuthor = "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (?, ?)";
-        
+        String callProc = "CALL AddOrUpdateBook(?, ?)";
         connect = Database.connectDB();
-        
         try {
             Alert alert;
-            
-            if (book_title.getText().isEmpty() || 
-                book_author.getText().isEmpty() || 
-                book_totalCopies.getText().isEmpty()) {
-                
+            if (book_title.getText().isEmpty() || book_totalCopies.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
                 alert.setContentText("Please fill all blank fields");
                 alert.showAndWait();
             } else {
-                // Start transaction
-                connect.setAutoCommit(false);
-                
-                try {
-                    // Insert new book
-                    prepare = connect.prepareStatement(sqlBook, Statement.RETURN_GENERATED_KEYS);
-                    prepare.setString(1, book_title.getText());
-                    prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
-                    prepare.setInt(3, Integer.parseInt(book_totalCopies.getText()));
-                    prepare.executeUpdate();
-                    
-                    // Get the generated book ID
-                    ResultSet generatedKeys = prepare.getGeneratedKeys();
-                    int bookId = 0;
-                    if (generatedKeys.next()) {
-                        bookId = generatedKeys.getInt(1);
-                    }
-                    
-                    // Split authors by comma and handle each author
-                    String[] authors = book_author.getText().split(",");
-                    for (String authorName : authors) {
-                        authorName = authorName.trim();
-                        if (!authorName.isEmpty()) {
-                            // Insert or get existing author
-                            prepare = connect.prepareStatement(sqlAuthor, Statement.RETURN_GENERATED_KEYS);
-                            prepare.setString(1, authorName);
-                            prepare.executeUpdate();
-                            
-                            // Get author ID
-                            ResultSet authorKeys = prepare.getGeneratedKeys();
-                            if (authorKeys.next()) {
-                                int authorId = authorKeys.getInt(1);
-                                
-                                // Link book with author
-                                prepare = connect.prepareStatement(sqlBookAuthor);
-                                prepare.setInt(1, bookId);
-                                prepare.setInt(2, authorId);
-                                prepare.executeUpdate();
-                            }
-                        }
-                    }
-                    
-                    connect.commit();
-                    
-                    alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Success Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully added book!");
-                    alert.showAndWait();
-                    
-                    showBooks();
-                    clearBookFields();
-                } catch (Exception e) {
-                    connect.rollback();
-                    throw e;
-                }
+                prepare = connect.prepareStatement(callProc);
+                prepare.setString(1, book_title.getText());
+                prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
+                prepare.execute();
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully added or updated book!");
+                alert.showAndWait();
+                showBooks();
+                clearBookFields();
             }
-            
         } catch (Exception e) {
             e.printStackTrace();
             Alert alert = new Alert(AlertType.ERROR);
@@ -703,20 +715,17 @@ public class AdminDashboardController implements Initializable {
             alert.setHeaderText(null);
             alert.setContentText("Error occurred while adding book");
             alert.showAndWait();
-        } finally {
-            try {
-                connect.setAutoCommit(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
     public void updateBook() {
-        String sqlBook = "UPDATE Book SET Title = ?, TotalCopies = ?, AvailableCopies = ? WHERE BookID = ?";
+        String sqlBook = "UPDATE Book SET Title = ?, TotalCopies = ? WHERE BookID = ?";
         String sqlDeleteAuthors = "DELETE FROM BookAuthor WHERE BookID = ?";
         String sqlAuthor = "INSERT INTO Author (FullName) VALUES (?) ON DUPLICATE KEY UPDATE AuthorID=LAST_INSERT_ID(AuthorID)";
         String sqlBookAuthor = "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (?, ?)";
+        String sqlDeleteGenres = "DELETE FROM BookGenre WHERE BookID = ?";
+        String sqlGenre = "INSERT INTO Genre (Name) VALUES (?) ON DUPLICATE KEY UPDATE GenreID=LAST_INSERT_ID(GenreID)";
+        String sqlBookGenre = "INSERT INTO BookGenre (BookID, GenreID) VALUES (?, ?)";
         
         connect = Database.connectDB();
         
@@ -733,14 +742,12 @@ public class AdminDashboardController implements Initializable {
                 return;
             }
 
-            if (book_title.getText().isEmpty() || 
-                book_author.getText().isEmpty() || 
-                book_totalCopies.getText().isEmpty()) {
-                
+            // Nếu tất cả đều trống thì báo lỗi
+            if (book_title.getText().isEmpty() && book_author.getText().isEmpty() && book_totalCopies.getText().isEmpty() && book_genre.getText().isEmpty() && book_quantity.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
-                alert.setContentText("Please fill all blank fields");
+                alert.setContentText("Please fill at least one field to update");
                 alert.showAndWait();
                 return;
             }
@@ -749,39 +756,75 @@ public class AdminDashboardController implements Initializable {
             connect.setAutoCommit(false);
             
             try {
-                // Update book details
+                // Lấy giá trị cũ nếu trường để trống
+                String newTitle = book_title.getText().isEmpty() ? selectedBook.getTitle() : book_title.getText();
+                int newTotalCopies = book_totalCopies.getText().isEmpty() ? selectedBook.getTotalCopies() : Integer.parseInt(book_totalCopies.getText());
+                // Không cập nhật availableCopies nữa
+
+                // Update book details (chỉ cập nhật Title và TotalCopies)
                 prepare = connect.prepareStatement(sqlBook);
-                prepare.setString(1, book_title.getText());
-                prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
-                prepare.setInt(3, Integer.parseInt(book_quantity.getText()));
-                prepare.setInt(4, selectedBook.getBookId());
+                prepare.setString(1, newTitle);
+                prepare.setInt(2, newTotalCopies);
+                prepare.setInt(3, selectedBook.getBookId());
                 prepare.executeUpdate();
 
-                // Delete existing author relationships
-                prepare = connect.prepareStatement(sqlDeleteAuthors);
-                prepare.setInt(1, selectedBook.getBookId());
-                prepare.executeUpdate();
+                // Update authors nếu có nhập
+                if (!book_author.getText().isEmpty()) {
+                    // Delete existing author relationships
+                    prepare = connect.prepareStatement(sqlDeleteAuthors);
+                    prepare.setInt(1, selectedBook.getBookId());
+                    prepare.executeUpdate();
 
-                // Add new authors
-                String[] authors = book_author.getText().split(",");
-                for (String authorName : authors) {
-                    authorName = authorName.trim();
-                    if (!authorName.isEmpty()) {
-                        // Insert or get existing author
-                        prepare = connect.prepareStatement(sqlAuthor, Statement.RETURN_GENERATED_KEYS);
-                        prepare.setString(1, authorName);
-                        prepare.executeUpdate();
-                        
-                        // Get author ID
-                        ResultSet authorKeys = prepare.getGeneratedKeys();
-                        if (authorKeys.next()) {
-                            int authorId = authorKeys.getInt(1);
-                            
-                            // Link book with author
-                            prepare = connect.prepareStatement(sqlBookAuthor);
-                            prepare.setInt(1, selectedBook.getBookId());
-                            prepare.setInt(2, authorId);
+                    // Add new authors
+                    String[] authors = book_author.getText().split(",");
+                    for (String authorName : authors) {
+                        authorName = authorName.trim();
+                        if (!authorName.isEmpty()) {
+                            // Insert or get existing author
+                            prepare = connect.prepareStatement(sqlAuthor, Statement.RETURN_GENERATED_KEYS);
+                            prepare.setString(1, authorName);
                             prepare.executeUpdate();
+                            
+                            // Get author ID
+                            ResultSet authorKeys = prepare.getGeneratedKeys();
+                            if (authorKeys.next()) {
+                                int authorId = authorKeys.getInt(1);
+                                // Link book with author
+                                prepare = connect.prepareStatement(sqlBookAuthor);
+                                prepare.setInt(1, selectedBook.getBookId());
+                                prepare.setInt(2, authorId);
+                                prepare.executeUpdate();
+                            }
+                        }
+                    }
+                }
+
+                // Update genres nếu có nhập
+                if (!book_genre.getText().isEmpty()) {
+                    // Delete existing genre relationships
+                    prepare = connect.prepareStatement(sqlDeleteGenres);
+                    prepare.setInt(1, selectedBook.getBookId());
+                    prepare.executeUpdate();
+
+                    // Add new genres
+                    String[] genres = book_genre.getText().split(",");
+                    for (String genreName : genres) {
+                        genreName = genreName.trim();
+                        if (!genreName.isEmpty()) {
+                            // Insert or get existing genre
+                            prepare = connect.prepareStatement(sqlGenre, Statement.RETURN_GENERATED_KEYS);
+                            prepare.setString(1, genreName);
+                            prepare.executeUpdate();
+                            // Get genre ID
+                            ResultSet genreKeys = prepare.getGeneratedKeys();
+                            if (genreKeys.next()) {
+                                int genreId = genreKeys.getInt(1);
+                                // Link book with genre
+                                prepare = connect.prepareStatement(sqlBookGenre);
+                                prepare.setInt(1, selectedBook.getBookId());
+                                prepare.setInt(2, genreId);
+                                prepare.executeUpdate();
+                            }
                         }
                     }
                 }
@@ -882,7 +925,8 @@ public class AdminDashboardController implements Initializable {
         if (selectedBook != null) {
             book_title.setText(selectedBook.getTitle());
             book_author.setText(selectedBook.getAuthors());
-            book_quantity.setText(String.valueOf(selectedBook.getAvailableCopies()));
+            book_genre.setText(selectedBook.getGenres());
+            book_totalCopies.setText(String.valueOf(selectedBook.getTotalCopies()));
         }
     }
 
@@ -1287,111 +1331,95 @@ public class AdminDashboardController implements Initializable {
             return;
         }
 
-        // Check if book is available when fulfilling
         if (newStatus.equals("Fulfilled")) {
-            String checkBook = "SELECT BookID, AvailableCopies FROM Book WHERE Title = ?";
-            String checkBorrower = "SELECT b.BorrowerID, ua.AccountID FROM UserAccount ua " +
-                                 "JOIN Borrower b ON ua.BorrowerID = b.BorrowerID " +
-                                 "WHERE ua.Username = ?";
-            
+            // Gọi procedure ApproveReservation
+            String callProc = "CALL ApproveReservation(?)";
             connect = Database.connectDB();
             try {
-                // Get BookID and check availability
-                prepare = connect.prepareStatement(checkBook);
-                prepare.setString(1, selectedReservation.getBookTitle());
-                result = prepare.executeQuery();
-                
-                if (!result.next() || result.getInt("AvailableCopies") <= 0) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Book is not available for borrowing");
-                    alert.showAndWait();
-                    return;
+                prepare = connect.prepareStatement(callProc);
+                prepare.setInt(1, selectedReservation.getId());
+                prepare.execute();
+
+                // Sau khi procedure thành công, thêm bản ghi vào BorrowEntry
+                // Lấy AccountID, BookID từ reservation
+                String getInfo = "SELECT r.BookID, ua.BorrowerID FROM Reservation r JOIN UserAccount ua ON r.AccountID = ua.AccountID WHERE r.ReservationID = ?";
+                PreparedStatement ps = connect.prepareStatement(getInfo);
+                ps.setInt(1, selectedReservation.getId());
+                ResultSet rs = ps.executeQuery();
+                int bookId = -1;
+                if (rs.next()) {
+                    bookId = rs.getInt("BookID");
+                    String borrowerId = rs.getString("BorrowerID");
+                    String insertBorrow = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, NOW(), ?)";
+                    PreparedStatement ps2 = connect.prepareStatement(insertBorrow);
+                    ps2.setString(1, borrowerId);
+                    ps2.setInt(2, bookId);
+                    ps2.setInt(3, getData.adminId);
+                    ps2.executeUpdate();
+                    ps2.close();
                 }
-                
-                int bookId = result.getInt("BookID");
+                rs.close();
+                ps.close();
 
-                // Get BorrowerID & AccountID
-                prepare = connect.prepareStatement(checkBorrower);
-                prepare.setString(1, selectedReservation.getUsername());
-                result = prepare.executeQuery();
-                
-                if (!result.next()) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Cannot find borrower information");
-                    alert.showAndWait();
-                    return;
+                // Lấy thêm tên sách (title)
+                String getTitle = "SELECT Title FROM Book WHERE BookID = ?";
+                PreparedStatement titleStmt = connect.prepareStatement(getTitle);
+                titleStmt.setInt(1, bookId);
+                ResultSet titleRs = titleStmt.executeQuery();
+                String bookTitle = "";
+                if (titleRs.next()) {
+                    bookTitle = titleRs.getString("Title");
                 }
-                
-                String borrowerId = result.getString("BorrowerID");
-                int accountId = result.getInt("AccountID");
-                
-                // Start transaction
-                connect.setAutoCommit(false);
-                try {
-                    // 1. Update reservation status
-                    String updateReservation = "UPDATE Reservation SET Status = ? WHERE ReservationID = ?";
-                    prepare = connect.prepareStatement(updateReservation);
-                    prepare.setString(1, newStatus);
-                    prepare.setInt(2, selectedReservation.getId());
-                    prepare.executeUpdate();
+                titleRs.close();
+                titleStmt.close();
 
-                    // 2. Create borrow entry
-                    String createBorrow = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, ?, ?)";
-                    prepare = connect.prepareStatement(createBorrow);
-                    prepare.setString(1, borrowerId);
-                    prepare.setInt(2, bookId);
-                    prepare.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-                    prepare.setInt(4, getData.adminId);
-                    prepare.executeUpdate();
-
-                    // 3. Update book available copies
-                    String updateBook = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ?";
-                    prepare = connect.prepareStatement(updateBook);
-                    prepare.setInt(1, bookId);
-                    prepare.executeUpdate();
-
-                    // 4. Gửi thông báo cho user
-                    String message = "Yêu cầu đặt sách '" + selectedReservation.getBookTitle() + "' của bạn đã được duyệt.";
-                    String insertNotif = "INSERT INTO Notification (AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
-                    prepare = connect.prepareStatement(insertNotif);
-                    prepare.setInt(1, accountId);
-                    prepare.setString(2, message);
-                    prepare.executeUpdate();
-
-                    connect.commit();
-
-                    Alert alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Success");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Reservation fulfilled and borrow record created successfully!");
-                    alert.showAndWait();
-
-                    showReservations();
-                    showBorrowRecords();
-                    clearReservationFields();
-
-                } catch (Exception e) {
-                    connect.rollback();
-                    throw e;
+                // Gửi notification cho user được duyệt
+                String notifAccepted = "INSERT INTO Notification(AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
+                PreparedStatement notifStmt = connect.prepareStatement(notifAccepted);
+                // Lấy AccountID từ reservation
+                String getAccountId = "SELECT AccountID FROM Reservation WHERE ReservationID = ?";
+                PreparedStatement accStmt = connect.prepareStatement(getAccountId);
+                accStmt.setInt(1, selectedReservation.getId());
+                ResultSet accRs = accStmt.executeQuery();
+                if (accRs.next()) {
+                    int accountId = accRs.getInt("AccountID");
+                    notifStmt.setInt(1, accountId);
+                    notifStmt.setString(2, "Your reservation for '" + bookTitle + "' has been approved and fulfilled.");
+                    notifStmt.executeUpdate();
                 }
+                accRs.close();
+                accStmt.close();
+                notifStmt.close();
+
+                // Gửi notification cho các user bị canceled (nếu có)
+                String notifCancel = "INSERT INTO Notification(AccountID, Message, DateCreated, IsRead) " +
+                    "SELECT AccountID, CONCAT('Your reservation for ''', ?, ''' has been canceled due to lack of available copies.'), NOW(), 0 " +
+                    "FROM Reservation WHERE BookID = ? AND Status = 'Canceled' AND ReservationDate >= (SELECT ReservationDate FROM Reservation WHERE ReservationID = ?)";
+                PreparedStatement notifCancelStmt = connect.prepareStatement(notifCancel);
+                notifCancelStmt.setString(1, bookTitle);
+                notifCancelStmt.setInt(2, bookId);
+                notifCancelStmt.setInt(3, selectedReservation.getId());
+                notifCancelStmt.executeUpdate();
+                notifCancelStmt.close();
+
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Reservation fulfilled, borrow record created!");
+                alert.showAndWait();
+                showReservations();
+                showBorrowRecords();
+                showCurrentBorrows();
+                clearReservationFields();
             } catch (Exception e) {
                 e.printStackTrace();
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
-                alert.setContentText("Error occurred while processing the reservation");
+                alert.setContentText("Error occurred while processing the reservation: " + e.getMessage());
                 alert.showAndWait();
-            } finally {
-                try {
-                    connect.setAutoCommit(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
+            return;
         } else {
             // Just update status for non-Fulfilled statuses
             String sql = "UPDATE Reservation SET Status = ? WHERE ReservationID = ?";
@@ -1414,7 +1442,7 @@ public class AdminDashboardController implements Initializable {
                     ResultSet rs = ps.executeQuery();
                     if (rs.next()) {
                         int accountId = rs.getInt("AccountID");
-                        String message = "Yêu cầu đặt sách '" + selectedReservation.getBookTitle() + "' của bạn đã bị hủy.";
+                        String message = "Your reservation for '" + selectedReservation.getBookTitle() + "' has been canceled.";
                         String insertNotif = "INSERT INTO Notification (AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
                         PreparedStatement ps2 = connect.prepareStatement(insertNotif);
                         ps2.setInt(1, accountId);
@@ -1501,7 +1529,7 @@ public class AdminDashboardController implements Initializable {
     }
 
     @Override
-    public void initialize(URL url, ResourceBundle rb) {
+    public void initialize(URL location, ResourceBundle resources) {
         showBooks();
         showUsers();
         showBorrowRecords();
@@ -1544,5 +1572,17 @@ public class AdminDashboardController implements Initializable {
         
         col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
+
+        if (searchTypeCombo != null) {
+            searchTypeCombo.setItems(FXCollections.observableArrayList("Title", "Author", "Genre"));
+            searchTypeCombo.setValue("Title");
+        }
+
+        // Khi chọn dòng trong bảng sách, tự động hiển thị thông tin vào các TextField
+        books_tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                selectBook();
+            }
+        });
     }
 } 

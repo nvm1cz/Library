@@ -120,16 +120,22 @@ ON DELETE CASCADE
 
 -- Bảng Review
 CREATE TABLE Review (
-ReviewID INT AUTO_INCREMENT PRIMARY KEY,
-EntryID INT NOT NULL,
-Rating INT CHECK (Rating BETWEEN 1 AND 5),
-Comment TEXT,
-ReviewDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (EntryID)
-REFERENCES BorrowEntry(EntryID)
-ON UPDATE CASCADE
-ON DELETE CASCADE
+    ReviewID INT AUTO_INCREMENT PRIMARY KEY,
+    EntryID INT NOT NULL,
+    BookID INT,
+    Rating INT CHECK (Rating BETWEEN 1 AND 5),
+    Comment TEXT,
+    ReviewDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (EntryID) REFERENCES BorrowEntry(EntryID)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (BookID) REFERENCES Book(BookID)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
 );
+
 
 -- Bảng Wishlist
 CREATE TABLE Wishlist (
@@ -183,14 +189,34 @@ INSERT INTO Book (Title, TotalCopies, AvailableCopies, TotalBorrows) VALUES
 ('Lập trình C cơ bản', 10, 8, 2),
 ('Những người khốn khổ', 5, 5, 0),
 ('Kinh tế học vi mô', 7, 7, 0),
-('Python nâng cao', 6, 4, 2);
+('Python nâng cao', 6, 4, 2),
+('Kafka bên bờ biển', 5, 5, 0),
+('Harry Potter và Hòn đá Phù thủy', 12, 11, 1),
+('1984', 6, 6, 0),
+('Sự giàu có của các quốc gia', 4, 4, 0),
+('Mắt biếc', 8, 7, 1),
+('Sapiens: Lược sử loài người', 10, 9, 1),
+('Kiêu hãnh và định kiến', 6, 6, 0),
+('Gatsby vĩ đại', 7, 7, 0),
+('Lược sử thời gian', 9, 8, 1),
+('The C Programming Language', 5, 5, 0);
 
 -- Author
 INSERT INTO Author (FullName) VALUES
 ('Nguyễn Văn T'), -- ID = 1
 ('Victor Hugo'), -- ID = 2
 ('Paul Krugman'), -- ID = 3
-('Trần Minh Đức'); -- ID = 4
+('Trần Minh Đức'),
+('Haruki Murakami'),      -- ID = 5
+('J.K. Rowling'),         -- ID = 6
+('George Orwell'),        -- ID = 7
+('Adam Smith'),           -- ID = 8
+('Nguyễn Nhật Ánh'),      -- ID = 9
+('Yuval Noah Harari'),    -- ID = 10
+('Jane Austen'),          -- ID = 11
+('F. Scott Fitzgerald'),  -- ID = 12
+('Stephen Hawking'),      -- ID = 13
+('Brian W. Kernighan');   -- ID = 14 
 
 -- BookAuthor
 INSERT INTO BookAuthor (BookID, AuthorID) VALUES
@@ -198,7 +224,17 @@ INSERT INTO BookAuthor (BookID, AuthorID) VALUES
 (2, 2), -- Những người khốn khổ - Victor Hugo
 (3, 3), -- Kinh tế học vi mô - Paul Krugman
 (4, 4), -- Python nâng cao - Trần Minh Đức
-(4, 1);
+(4, 1),
+(5, 5),   -- Kafka bên bờ biển - Murakami
+(6, 6),   -- Harry Potter - Rowling
+(7, 7),   -- 1984 - Orwell
+(8, 8),   -- Sự giàu có - Adam Smith
+(9, 9),   -- Mắt biếc - Nguyễn Nhật Ánh
+(10, 10), -- Sapiens - Harari
+(11, 11), -- Kiêu hãnh - Austen
+(12, 12), -- Gatsby - Fitzgerald
+(13, 13), -- Lược sử thời gian - Hawking
+(14, 14); -- C Programming Language - Kernighan
 
 -- BookGenre
 INSERT INTO BookGenre (BookID, GenreID) VALUES
@@ -206,7 +242,17 @@ INSERT INTO BookGenre (BookID, GenreID) VALUES
 (2, 2),
 (3, 4),
 (4, 3),
-(4, 1);
+(4, 1),
+(5, 2),  -- Kafka - Văn học
+(6, 2),  -- Harry Potter - Văn học
+(7, 2),  -- 1984 - Văn học
+(8, 4),  -- Sự giàu có - Kinh tế
+(9, 2),  -- Mắt biếc - Văn học
+(10, 1), -- Sapiens - Khoa học
+(11, 2), -- Kiêu hãnh - Văn học
+(12, 2), -- Gatsby - Văn học
+(13, 1), -- Lược sử thời gian - Khoa học
+(14, 3); -- C Programming - Lập trình
 
 -- BorrowEntry
 INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ReturnDate, ProcessedBy) VALUES
@@ -229,3 +275,4 @@ CREATE INDEX idx_reservation_accountid ON Reservation (AccountID);
 CREATE INDEX idx_reservation_bookid ON Reservation (BookID);
 CREATE INDEX idx_genre_name ON Genre (Name);
 CREATE INDEX idx_author_name ON Author (FullName);
+

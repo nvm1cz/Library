@@ -96,21 +96,25 @@
                      <children>
                         <TableView fx:id="books_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
                            <columns>
-                              <TableColumn fx:id="col_bookTitle" prefWidth="300.0" text="Title" />
-                              <TableColumn fx:id="col_author" prefWidth="300.0" text="Author" />
-                              <TableColumn fx:id="col_totalCopies" prefWidth="150.0" text="Total Copies" />
-                              <TableColumn fx:id="col_availableCopies" prefWidth="150.0" text="Available" />
-                              <TableColumn fx:id="col_totalBorrows" prefWidth="160.0" text="Total Borrows" />
+                              <TableColumn fx:id="col_bookTitle" prefWidth="226.66668701171875" text="Title" />
+                              <TableColumn fx:id="col_author" prefWidth="200.0" text="Author" />
+                              <TableColumn fx:id="col_genre" prefWidth="144.66668701171875" text="Genre" />
+                              <TableColumn fx:id="col_totalCopies" prefWidth="138.66668701171875" text="Total Copies" />
+                              <TableColumn fx:id="col_availableCopies" prefWidth="120.0" text="Available" />
+                              <TableColumn fx:id="col_totalBorrows" prefWidth="123.3333740234375" text="Total Borrows" />
+                              <TableColumn fx:id="col_avgRating" prefWidth="114.0" text="Avg Rating" />
                            </columns>
                         </TableView>
                         <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
                               <TextField fx:id="book_title" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Book Title" styleClass="textfield" />
                               <TextField fx:id="book_author" layoutX="340.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Author" styleClass="textfield" />
-                              <TextField fx:id="book_totalCopies" layoutX="660.0" layoutY="15.0" prefHeight="35.0" prefWidth="150.0" promptText="Total Copies" styleClass="textfield" />
+                              <TextField fx:id="book_genre" layoutX="660.0" layoutY="15.0" prefHeight="35.0" prefWidth="200.0" promptText="Genre" styleClass="textfield" />
+                              <TextField fx:id="book_totalCopies" layoutX="880.0" layoutY="15.0" prefHeight="35.0" prefWidth="150.0" promptText="Total Copies" styleClass="textfield" />
                               <Button fx:id="addBook_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#addBook" prefHeight="35.0" prefWidth="140.0" styleClass="add-btn" text="Add Book" />
-                              <Button fx:id="deleteBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="35.0" prefWidth="140.0" styleClass="delete-btn" text="Delete" />
-                              <Button fx:id="clearBook_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
+                              <Button fx:id="updateBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#updateBook" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Update Book" />
+                              <Button fx:id="deleteBook_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#deleteBook" prefHeight="35.0" prefWidth="140.0" styleClass="delete-btn" text="Delete" />
+                              <Button fx:id="clearBook_btn" layoutX="500.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBookFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
@@ -149,7 +153,7 @@
                               <TableColumn fx:id="col_borrowBook" prefWidth="360.0" text="Book" />
                               <TableColumn fx:id="col_borrowDate" prefWidth="160.0" text="Borrow Date" />
                               <TableColumn fx:id="col_returnDate" prefWidth="160.0" text="Return Date" />
-                              <TableColumn fx:id="col_borrowStatus" prefWidth="80.0" text="Status" />
+                              <TableColumn fx:id="col_borrowStatus" prefWidth="78.6666259765625" text="Status" />
                            </columns>
                         </TableView>
                         <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
