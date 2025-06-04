@@ -131,11 +131,9 @@
                         <Button fx:id="clear_search_btn" layoutX="384.0" layoutY="14.0" mnemonicParsing="false" onAction="#clearSearch" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
                         <TableView fx:id="availableBooks_tableView" layoutX="14.0" layoutY="54.0" prefHeight="400.0" prefWidth="722.0">
                            <columns>
-                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="180.0" text="Book Title" />
-                              <TableColumn fx:id="col_ab_author" prefWidth="180.0" text="Author" />
-                              <TableColumn fx:id="col_ab_totalCopies" prefWidth="120.0" text="Total Copies" />
-                              <TableColumn fx:id="col_ab_availableCopies" prefWidth="120.0" text="Available" />
-                              <TableColumn fx:id="col_ab_totalBorrows" prefWidth="120.0" text="Total Borrows" />
+                              <TableColumn fx:id="col_ab_bookTitle" prefWidth="250.0" text="Book Title" />
+                              <TableColumn fx:id="col_ab_author" prefWidth="250.0" text="Author" />
+                              <TableColumn fx:id="col_ab_availableCopies" prefWidth="220.0" text="Available" />
                            </columns>
                         </TableView>
                         <Button fx:id="take_btn" layoutX="14.0" layoutY="463.0" mnemonicParsing="false" onAction="#abTakeButton" prefHeight="40.0" prefWidth="100.0" styleClass="take-btn" stylesheets="@designDashboard.css" text="Take" />

@@ -49,6 +49,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import java.sql.CallableStatement;
 
 public class DashBoardController implements Initializable {
     
@@ -105,13 +106,7 @@ public class DashBoardController implements Initializable {
     private TableColumn<availableBooks, String> col_ab_author;
 
     @FXML
-    private TableColumn<availableBooks, Integer> col_ab_totalCopies;
-
-    @FXML
     private TableColumn<availableBooks, Integer> col_ab_availableCopies;
-
-    @FXML
-    private TableColumn<availableBooks, Integer> col_ab_totalBorrows;
 
     @FXML
     private ImageView availableBooks_imageView;
@@ -250,11 +245,18 @@ public class DashBoardController implements Initializable {
 
     public ObservableList<availableBooks> dataList(String searchTerm) {
         ObservableList<availableBooks> listBooks = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM Book WHERE AvailableCopies > 0";
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
+                    "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
+                    "FROM Book b " +
+                    "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                    "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "WHERE b.AvailableCopies > 0";
         
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            sql += " AND (LOWER(Title) LIKE LOWER(?) OR LOWER(Author) LIKE LOWER(?))";
+            sql += " AND (LOWER(b.Title) LIKE LOWER(?) OR LOWER(a.FullName) LIKE LOWER(?))";
         }
+        
+        sql += " GROUP BY b.BookID";
         
         connect = Database.connectDB();
         
@@ -273,7 +275,7 @@ public class DashBoardController implements Initializable {
                 availableBooks book = new availableBooks(
                     result.getInt("BookID"),
                     result.getString("Title"),
-                    result.getString("Author"),
+                    result.getString("Authors"),
                     result.getInt("TotalCopies"),
                     result.getInt("AvailableCopies"),
                     result.getInt("TotalBorrows")
@@ -292,10 +294,8 @@ public class DashBoardController implements Initializable {
         ObservableList<availableBooks> listBooks = dataList();
         
         col_ab_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        col_ab_author.setCellValueFactory(new PropertyValueFactory<>("author"));
-        col_ab_totalCopies.setCellValueFactory(new PropertyValueFactory<>("totalCopies"));
+        col_ab_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
         col_ab_availableCopies.setCellValueFactory(new PropertyValueFactory<>("availableCopies"));
-        col_ab_totalBorrows.setCellValueFactory(new PropertyValueFactory<>("totalBorrows"));
         
         availableBooks_tableView.setItems(listBooks);
     }
@@ -426,6 +426,25 @@ public class DashBoardController implements Initializable {
                     }
                     
                     int accountId = result.getInt("AccountID");
+
+                    // Call stored procedure to check if user can reserve this book
+                    String checkSql = "{CALL CheckCanReserveBook(?, ?, ?)}";
+                    CallableStatement callStmt = connect.prepareCall(checkSql);
+                    callStmt.setInt(1, accountId);
+                    callStmt.setInt(2, book.getBookId());
+                    callStmt.registerOutParameter(3, java.sql.Types.INTEGER);
+                    callStmt.execute();
+                    
+                    int canReserve = callStmt.getInt(3);
+                    
+                    if (canReserve == 0) {
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error Message");
+                        alert.setHeaderText(null);
+                        alert.setContentText("You cannot reserve this book because you have already borrowed it and haven't returned it yet.");
+                        alert.showAndWait();
+                        return;
+                    }
                     
                     // Check if user already has a pending reservation for this book
                     String checkReservationSql = "SELECT COUNT(*) as count FROM Reservation " +
@@ -723,30 +742,33 @@ public void exit() {
     public class BorrowedBook {
         private int bookId;
         private String title;
-        private String author;
+        private String authors;
         private String borrowDate;
 
-        public BorrowedBook(int bookId, String title, String author, String borrowDate) {
+        public BorrowedBook(int bookId, String title, String authors, String borrowDate) {
             this.bookId = bookId;
             this.title = title;
-            this.author = author;
+            this.authors = authors;
             this.borrowDate = borrowDate;
         }
 
         public int getBookId() { return bookId; }
         public String getTitle() { return title; }
-        public String getAuthor() { return author; }
+        public String getAuthors() { return authors; }
         public String getBorrowDate() { return borrowDate; }
     }
 
     public ObservableList<BorrowedBook> getBorrowedBooksList() {
         ObservableList<BorrowedBook> borrowedBooks = FXCollections.observableArrayList();
         
-        String sql = "SELECT b.BookID, b.Title, b.Author, br.BorrowDate " +
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, br.BorrowDate " +
                     "FROM Book b " +
                     "JOIN BorrowEntry br ON b.BookID = br.BookID " +
                     "JOIN Borrower bo ON br.BorrowerID = bo.BorrowerID " +
-                    "WHERE bo.BorrowerID = ? AND br.ReturnDate IS NULL";
+                    "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                    "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "WHERE bo.BorrowerID = ? AND br.ReturnDate IS NULL " +
+                    "GROUP BY b.BookID, br.BorrowDate";
         
         connect = Database.connectDB();
         
@@ -759,7 +781,7 @@ public void exit() {
                 BorrowedBook book = new BorrowedBook(
                     result.getInt("BookID"),
                     result.getString("Title"),
-                    result.getString("Author"),
+                    result.getString("Authors"),
                     result.getString("BorrowDate")
                 );
                 borrowedBooks.add(book);
@@ -775,7 +797,7 @@ public void exit() {
         ObservableList<BorrowedBook> borrowedBooks = getBorrowedBooksList();
         
         col_rb_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        col_rb_author.setCellValueFactory(new PropertyValueFactory<>("author"));
+        col_rb_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
         col_rb_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         
         returnBooks_tableView.setItems(borrowedBooks);
@@ -792,7 +814,7 @@ public void exit() {
         // Only try to update labels if they exist and book is selected
         if (returnBook_title != null && returnBook_author != null && returnBook_borrowDate != null) {
             returnBook_title.setText(selectedBook.getTitle());
-            returnBook_author.setText(selectedBook.getAuthor());
+            returnBook_author.setText(selectedBook.getAuthors());
             returnBook_borrowDate.setText(selectedBook.getBorrowDate());
         }
     }

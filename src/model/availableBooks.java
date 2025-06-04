@@ -3,15 +3,15 @@ package model;
 public class availableBooks {
     private int bookId;
     private String title;
-    private String author;
+    private String authors;
     private int totalCopies;
     private int availableCopies;
     private int totalBorrows;
 
-    public availableBooks(int bookId, String title, String author, int totalCopies, int availableCopies, int totalBorrows) {
+    public availableBooks(int bookId, String title, String authors, int totalCopies, int availableCopies, int totalBorrows) {
         this.bookId = bookId;
         this.title = title;
-        this.author = author;
+        this.authors = authors;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
         this.totalBorrows = totalBorrows;
@@ -25,8 +25,8 @@ public class availableBooks {
         return title;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAuthors() {
+        return authors;
     }
 
     public int getTotalCopies() {
@@ -49,8 +49,8 @@ public class availableBooks {
         this.title = title;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setAuthors(String authors) {
+        this.authors = authors;
     }
 
     public void setTotalCopies(int totalCopies) {

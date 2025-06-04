@@ -9,6 +9,10 @@ import java.util.ResourceBundle;
 import java.util.Optional;
 import java.time.LocalDate;
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.sql.Timestamp;
+import java.sql.CallableStatement;
 
 import dao.Database;
 import model.getData;
@@ -16,6 +20,7 @@ import model.BorrowEntry;
 import model.availableBooks;
 import model.UserAccount;
 import model.Reservation;
+import model.CurrentBorrow;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -32,6 +37,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
+import javafx.scene.control.TableCell;
 
 public class AdminDashboardController implements Initializable {
 
@@ -156,22 +162,22 @@ public class AdminDashboardController implements Initializable {
     private TableView<BorrowEntry> borrow_tableView;
 
     @FXML
-    private TableColumn<BorrowEntry, Integer> col_borrowId;
+    private TableColumn<BorrowEntry, String> col_borrowId;
 
     @FXML
-    private TableColumn<BorrowEntry, String> col_borrower;
+    private TableColumn<BorrowEntry, String> col_borrowName;
 
     @FXML
-    private TableColumn<BorrowEntry, String> col_book;
+    private TableColumn<BorrowEntry, String> col_borrowBook;
 
     @FXML
-    private TableColumn<BorrowEntry, LocalDate> col_borrowDate;
+    private TableColumn<BorrowEntry, LocalDateTime> col_borrowDate;
 
     @FXML
-    private TableColumn<BorrowEntry, LocalDate> col_returnDate;
+    private TableColumn<BorrowEntry, LocalDateTime> col_returnDate;
 
     @FXML
-    private TableColumn<BorrowEntry, String> col_status;
+    private TableColumn<BorrowEntry, String> col_borrowStatus;
 
     @FXML
     private ComboBox<Borrower> borrower_combo;
@@ -204,13 +210,37 @@ public class AdminDashboardController implements Initializable {
     private TableColumn<Reservation, String> col_reservationBook;
 
     @FXML
-    private TableColumn<Reservation, LocalDate> col_reservationDate;
+    private TableColumn<Reservation, LocalDateTime> col_reservationDate;
 
     @FXML
     private TableColumn<Reservation, String> col_reservationStatus;
 
     @FXML
     private ComboBox<String> reservation_status_combo;
+
+    @FXML
+    private Button currentBorrows_btn;
+
+    @FXML
+    private AnchorPane currentBorrows_form;
+
+    @FXML
+    private TableView<CurrentBorrow> currentBorrows_tableView;
+
+    @FXML
+    private TableColumn<CurrentBorrow, Integer> col_currentBorrowId;
+
+    @FXML
+    private TableColumn<CurrentBorrow, String> col_currentBorrowerId;
+
+    @FXML
+    private TableColumn<CurrentBorrow, String> col_currentBorrowerName;
+
+    @FXML
+    private TableColumn<CurrentBorrow, String> col_currentBookTitle;
+
+    @FXML
+    private TableColumn<CurrentBorrow, LocalDateTime> col_currentBorrowDate;
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -244,6 +274,7 @@ public class AdminDashboardController implements Initializable {
             manageUsers_form.setVisible(false);
             borrowRecords_form.setVisible(false);
             reservations_form.setVisible(false);
+            currentBorrows_form.setVisible(false);
             
             showBooks();
         } else if (event.getSource() == manageUsers_btn) {
@@ -251,6 +282,7 @@ public class AdminDashboardController implements Initializable {
             manageUsers_form.setVisible(true);
             borrowRecords_form.setVisible(false);
             reservations_form.setVisible(false);
+            currentBorrows_form.setVisible(false);
             
             showUsers();
         } else if (event.getSource() == borrowRecords_btn) {
@@ -258,6 +290,7 @@ public class AdminDashboardController implements Initializable {
             manageUsers_form.setVisible(false);
             borrowRecords_form.setVisible(true);
             reservations_form.setVisible(false);
+            currentBorrows_form.setVisible(false);
             
             showBorrowRecords();
         } else if (event.getSource() == reservations_btn) {
@@ -265,14 +298,28 @@ public class AdminDashboardController implements Initializable {
             manageUsers_form.setVisible(false);
             borrowRecords_form.setVisible(false);
             reservations_form.setVisible(true);
+            currentBorrows_form.setVisible(false);
             
             showReservations();
+        } else if (event.getSource() == currentBorrows_btn) {
+            manageBooks_form.setVisible(false);
+            manageUsers_form.setVisible(false);
+            borrowRecords_form.setVisible(false);
+            reservations_form.setVisible(false);
+            currentBorrows_form.setVisible(true);
+            
+            showCurrentBorrows();
         }
     }
 
     public ObservableList<availableBooks> booksList() {
         ObservableList<availableBooks> bookList = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM Book";
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
+                    "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
+                    "FROM Book b " +
+                    "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                    "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "GROUP BY b.BookID";
         
         connect = Database.connectDB();
         
@@ -286,7 +333,7 @@ public class AdminDashboardController implements Initializable {
                 book = new availableBooks(
                         result.getInt("BookID"),
                         result.getString("Title"),
-                        result.getString("Author"),
+                        result.getString("Authors"),
                         result.getInt("TotalCopies"),
                         result.getInt("AvailableCopies"),
                         result.getInt("TotalBorrows")
@@ -305,7 +352,7 @@ public class AdminDashboardController implements Initializable {
         ObservableList<availableBooks> listBooks = booksList();
         
         col_bookTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        col_author.setCellValueFactory(new PropertyValueFactory<>("author"));
+        col_author.setCellValueFactory(new PropertyValueFactory<>("authors"));
         col_totalCopies.setCellValueFactory(new PropertyValueFactory<>("totalCopies"));
         col_availableCopies.setCellValueFactory(new PropertyValueFactory<>("availableCopies"));
         col_totalBorrows.setCellValueFactory(new PropertyValueFactory<>("totalBorrows"));
@@ -328,15 +375,15 @@ public class AdminDashboardController implements Initializable {
             result = prepare.executeQuery();
             
             while (result.next()) {
-                Date returnDate = result.getDate("ReturnDate");
+                java.sql.Timestamp returnTimestamp = result.getTimestamp("ReturnDate");
                 list.add(new BorrowEntry(
                     result.getInt("EntryID"),
                     result.getString("BorrowerID"),
                     result.getString("BorrowerName"),
                     result.getInt("BookID"),
                     result.getString("BookTitle"),
-                    result.getDate("BorrowDate").toLocalDate(),
-                    returnDate != null ? returnDate.toLocalDate() : null,
+                    result.getTimestamp("BorrowDate").toLocalDateTime(),
+                    returnTimestamp != null ? returnTimestamp.toLocalDateTime() : null,
                     result.getInt("ProcessedBy")
                 ));
             }
@@ -351,11 +398,11 @@ public class AdminDashboardController implements Initializable {
         ObservableList<BorrowEntry> list = borrowList();
         
         col_borrowId.setCellValueFactory(new PropertyValueFactory<>("entryId"));
-        col_borrower.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
-        col_book.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+        col_borrowName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
+        col_borrowBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
         col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
-        col_status.setCellValueFactory(new PropertyValueFactory<>("status"));
+        col_borrowStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         
         borrow_tableView.setItems(list);
     }
@@ -386,7 +433,14 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void loadAvailableBooks() {
-        String sql = "SELECT * FROM Book WHERE AvailableCopies > 0 ORDER BY Title";
+        String sql = "SELECT b.BookID, b.Title, GROUP_CONCAT(a.FullName SEPARATOR ', ') as Authors, " +
+                    "b.TotalCopies, b.AvailableCopies, b.TotalBorrows " +
+                    "FROM Book b " +
+                    "LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID " +
+                    "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
+                    "WHERE b.AvailableCopies > 0 " +
+                    "GROUP BY b.BookID " +
+                    "ORDER BY b.Title";
         connect = Database.connectDB();
         
         try {
@@ -398,7 +452,7 @@ public class AdminDashboardController implements Initializable {
                 books.add(new availableBooks(
                     result.getInt("BookID"),
                     result.getString("Title"),
-                    result.getString("Author"),
+                    result.getString("Authors"),
                     result.getInt("TotalCopies"),
                     result.getInt("AvailableCopies"),
                     result.getInt("TotalBorrows")
@@ -423,7 +477,6 @@ public class AdminDashboardController implements Initializable {
 
     public void addBorrow() {
         String sql = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, ?, ?)";
-        String updateBook = "UPDATE Book SET AvailableCopies = AvailableCopies - 1, TotalBorrows = TotalBorrows + 1 WHERE BookID = ?";
         
         connect = Database.connectDB();
         
@@ -439,49 +492,31 @@ public class AdminDashboardController implements Initializable {
                 return;
             }
 
-            connect.setAutoCommit(false);
-            try {
-                // Add borrow entry
-                prepare = connect.prepareStatement(sql);
-                prepare.setString(1, borrower_combo.getValue().getId());
-                prepare.setInt(2, book_combo.getValue().getBookId());
-                prepare.setDate(3, Date.valueOf(LocalDate.now()));
-                prepare.setInt(4, getData.adminId);
-                prepare.executeUpdate();
+            // Add borrow entry - trigger will handle book count updates
+            prepare = connect.prepareStatement(sql);
+            prepare.setString(1, borrower_combo.getValue().getId());
+            prepare.setInt(2, book_combo.getValue().getBookId());
+            prepare.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            prepare.setInt(4, getData.adminId);
+            prepare.executeUpdate();
 
-                // Update book counts
-                prepare = connect.prepareStatement(updateBook);
-                prepare.setInt(1, book_combo.getValue().getBookId());
-                prepare.executeUpdate();
+            alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Success Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Successfully added borrow record!");
+            alert.showAndWait();
 
-                connect.commit();
-
-                alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Success Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Successfully added borrow record!");
-                alert.showAndWait();
-
-                showBorrowRecords();
-                loadAvailableBooks();
-                clearBorrowFields();
-            } catch (Exception e) {
-                connect.rollback();
-                throw e;
-            }
+            showBorrowRecords();
+            loadAvailableBooks();
+            clearBorrowFields();
+            
         } catch (Exception e) {
             e.printStackTrace();
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error Message");
             alert.setHeaderText(null);
-            alert.setContentText("Error occurred while adding borrow record");
+            alert.setContentText("Error: " + e.getMessage());
             alert.showAndWait();
-        } finally {
-            try {
-                connect.setAutoCommit(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -505,53 +540,32 @@ public class AdminDashboardController implements Initializable {
             return;
         }
 
-        String updateBorrow = "UPDATE BorrowEntry SET ReturnDate = ? WHERE EntryID = ?";
-        String updateBook = "UPDATE Book SET AvailableCopies = AvailableCopies + 1 WHERE BookID = ?";
-        
         connect = Database.connectDB();
         
         try {
-            connect.setAutoCommit(false);
-            try {
-                // Update borrow entry
-                prepare = connect.prepareStatement(updateBorrow);
-                prepare.setDate(1, Date.valueOf(LocalDate.now()));
-                prepare.setInt(2, selected.getEntryId());
-                prepare.executeUpdate();
+            // Call the ReturnBook stored procedure
+            String sql = "{CALL ReturnBook(?)}";
+            CallableStatement callStmt = connect.prepareCall(sql);
+            callStmt.setInt(1, selected.getEntryId());
+            callStmt.execute();
 
-                // Update book counts
-                prepare = connect.prepareStatement(updateBook);
-                prepare.setInt(1, selected.getBookId());
-                prepare.executeUpdate();
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Success Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Successfully returned the book!");
+            alert.showAndWait();
 
-                connect.commit();
-
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Success Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Successfully returned the book!");
-                alert.showAndWait();
-
-                showBorrowRecords();
-                loadAvailableBooks();
-                clearBorrowFields();
-            } catch (Exception e) {
-                connect.rollback();
-                throw e;
-            }
+            showBorrowRecords();
+            loadAvailableBooks();
+            clearBorrowFields();
+            
         } catch (Exception e) {
             e.printStackTrace();
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error Message");
             alert.setHeaderText(null);
-            alert.setContentText("Error occurred while returning the book");
+            alert.setContentText("Error occurred while returning the book: " + e.getMessage());
             alert.showAndWait();
-        } finally {
-            try {
-                connect.setAutoCommit(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -597,7 +611,9 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void addBook() {
-        String sql = "INSERT INTO Book (Title, Author, TotalCopies, AvailableCopies, TotalBorrows) VALUES (?, ?, ?, ?, 0)";
+        String sqlBook = "INSERT INTO Book (Title, TotalCopies, AvailableCopies, TotalBorrows) VALUES (?, ?, ?, 0)";
+        String sqlAuthor = "INSERT INTO Author (FullName) VALUES (?) ON DUPLICATE KEY UPDATE AuthorID=LAST_INSERT_ID(AuthorID)";
+        String sqlBookAuthor = "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (?, ?)";
         
         connect = Database.connectDB();
         
@@ -614,85 +630,233 @@ public class AdminDashboardController implements Initializable {
                 alert.setContentText("Please fill all blank fields");
                 alert.showAndWait();
             } else {
-                String checkData = "SELECT Title FROM Book WHERE Title = '" + book_title.getText() + "'";
+                // Start transaction
+                connect.setAutoCommit(false);
                 
-                statement = connect.createStatement();
-                result = statement.executeQuery(checkData);
-                
-                if (result.next()) {
-                    alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Book: " + book_title.getText() + " already exists!");
-                    alert.showAndWait();
-                } else {
-                    prepare = connect.prepareStatement(sql);
+                try {
+                    // Insert new book
+                    prepare = connect.prepareStatement(sqlBook, Statement.RETURN_GENERATED_KEYS);
                     prepare.setString(1, book_title.getText());
-                    prepare.setString(2, book_author.getText());
-                    
-                    int copies = Integer.parseInt(book_totalCopies.getText());
-                    prepare.setInt(3, copies);
-                    prepare.setInt(4, copies); // Initially available copies equals total copies
-                    
+                    prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
+                    prepare.setInt(3, Integer.parseInt(book_totalCopies.getText()));
                     prepare.executeUpdate();
+                    
+                    // Get the generated book ID
+                    ResultSet generatedKeys = prepare.getGeneratedKeys();
+                    int bookId = 0;
+                    if (generatedKeys.next()) {
+                        bookId = generatedKeys.getInt(1);
+                    }
+                    
+                    // Split authors by comma and handle each author
+                    String[] authors = book_author.getText().split(",");
+                    for (String authorName : authors) {
+                        authorName = authorName.trim();
+                        if (!authorName.isEmpty()) {
+                            // Insert or get existing author
+                            prepare = connect.prepareStatement(sqlAuthor, Statement.RETURN_GENERATED_KEYS);
+                            prepare.setString(1, authorName);
+                            prepare.executeUpdate();
+                            
+                            // Get author ID
+                            ResultSet authorKeys = prepare.getGeneratedKeys();
+                            if (authorKeys.next()) {
+                                int authorId = authorKeys.getInt(1);
+                                
+                                // Link book with author
+                                prepare = connect.prepareStatement(sqlBookAuthor);
+                                prepare.setInt(1, bookId);
+                                prepare.setInt(2, authorId);
+                                prepare.executeUpdate();
+                            }
+                        }
+                    }
+                    
+                    connect.commit();
                     
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Success Message");
                     alert.setHeaderText(null);
-                    alert.setContentText("Successfully Added!");
+                    alert.setContentText("Successfully added book!");
                     alert.showAndWait();
                     
-                    // TO UPDATE THE TABLEVIEW
                     showBooks();
-                    // TO CLEAR THE FIELDS
                     clearBookFields();
+                } catch (Exception e) {
+                    connect.rollback();
+                    throw e;
                 }
             }
+            
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error occurred while adding book");
+            alert.showAndWait();
+        } finally {
+            try {
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public void deleteBook() {
-        String sql = "DELETE FROM Book WHERE BookID = '" + getData.bookId + "'";
+    public void updateBook() {
+        String sqlBook = "UPDATE Book SET Title = ?, TotalCopies = ?, AvailableCopies = ? WHERE BookID = ?";
+        String sqlDeleteAuthors = "DELETE FROM BookAuthor WHERE BookID = ?";
+        String sqlAuthor = "INSERT INTO Author (FullName) VALUES (?) ON DUPLICATE KEY UPDATE AuthorID=LAST_INSERT_ID(AuthorID)";
+        String sqlBookAuthor = "INSERT INTO BookAuthor (BookID, AuthorID) VALUES (?, ?)";
         
         connect = Database.connectDB();
         
         try {
             Alert alert;
             
-            if (getData.bookId == null) {
+            availableBooks selectedBook = books_tableView.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a book to update");
+                alert.showAndWait();
+                return;
+            }
+
+            if (book_title.getText().isEmpty() || 
+                book_author.getText().isEmpty() || 
+                book_totalCopies.getText().isEmpty()) {
+                
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Please fill all blank fields");
+                alert.showAndWait();
+                return;
+            }
+
+            // Start transaction
+            connect.setAutoCommit(false);
+            
+            try {
+                // Update book details
+                prepare = connect.prepareStatement(sqlBook);
+                prepare.setString(1, book_title.getText());
+                prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
+                prepare.setInt(3, Integer.parseInt(book_quantity.getText()));
+                prepare.setInt(4, selectedBook.getBookId());
+                prepare.executeUpdate();
+
+                // Delete existing author relationships
+                prepare = connect.prepareStatement(sqlDeleteAuthors);
+                prepare.setInt(1, selectedBook.getBookId());
+                prepare.executeUpdate();
+
+                // Add new authors
+                String[] authors = book_author.getText().split(",");
+                for (String authorName : authors) {
+                    authorName = authorName.trim();
+                    if (!authorName.isEmpty()) {
+                        // Insert or get existing author
+                        prepare = connect.prepareStatement(sqlAuthor, Statement.RETURN_GENERATED_KEYS);
+                        prepare.setString(1, authorName);
+                        prepare.executeUpdate();
+                        
+                        // Get author ID
+                        ResultSet authorKeys = prepare.getGeneratedKeys();
+                        if (authorKeys.next()) {
+                            int authorId = authorKeys.getInt(1);
+                            
+                            // Link book with author
+                            prepare = connect.prepareStatement(sqlBookAuthor);
+                            prepare.setInt(1, selectedBook.getBookId());
+                            prepare.setInt(2, authorId);
+                            prepare.executeUpdate();
+                        }
+                    }
+                }
+
+                connect.commit();
+                
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully updated book!");
+                alert.showAndWait();
+                
+                showBooks();
+                clearBookFields();
+            } catch (Exception e) {
+                connect.rollback();
+                throw e;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error occurred while updating book");
+            alert.showAndWait();
+        } finally {
+            try {
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void deleteBook() {
+        String sql = "DELETE FROM Book WHERE BookID = ?";
+        
+        connect = Database.connectDB();
+        
+        try {
+            Alert alert;
+            
+            availableBooks selectedBook = books_tableView.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select a book to delete");
                 alert.showAndWait();
-            } else {
-                alert = new Alert(AlertType.CONFIRMATION);
-                alert.setTitle("Confirmation Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Are you sure you want to delete this book?");
-                
-                Optional<ButtonType> option = alert.showAndWait();
-                
-                if (option.get().equals(ButtonType.OK)) {
-                    statement = connect.createStatement();
-                    statement.executeUpdate(sql);
-                    
-                    alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Success Message");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Successfully Deleted!");
-                    alert.showAndWait();
-                    
-                    // TO UPDATE THE TABLEVIEW
-                    showBooks();
-                    // TO CLEAR THE FIELDS
-                    clearBookFields();
-                }
+                return;
             }
+
+            alert = new Alert(AlertType.CONFIRMATION);
+            alert.setTitle("Confirmation Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Are you sure you want to delete this book?");
+            
+            Optional<ButtonType> option = alert.showAndWait();
+            
+            if (option.get().equals(ButtonType.OK)) {
+                // Note: BookAuthor records will be automatically deleted due to CASCADE
+                prepare = connect.prepareStatement(sql);
+                prepare.setInt(1, selectedBook.getBookId());
+                prepare.executeUpdate();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Success Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully deleted book!");
+                alert.showAndWait();
+
+                showBooks();
+                clearBookFields();
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error Message");
+            alert.setHeaderText(null);
+            alert.setContentText("Error occurred while deleting book");
+            alert.showAndWait();
         }
     }
 
@@ -709,7 +873,7 @@ public class AdminDashboardController implements Initializable {
         
         if (selectedBook != null) {
             book_title.setText(selectedBook.getTitle());
-            book_author.setText(selectedBook.getAuthor());
+            book_author.setText(selectedBook.getAuthors());
             book_quantity.setText(String.valueOf(selectedBook.getAvailableCopies()));
         }
     }
@@ -1044,7 +1208,7 @@ public class AdminDashboardController implements Initializable {
                     result.getInt("ReservationID"),
                     result.getString("Username"),
                     result.getString("Title"),
-                    result.getDate("ReservationDate").toLocalDate(),
+                    result.getTimestamp("ReservationDate").toLocalDateTime(),
                     result.getString("Status")
                 );
                 listReservations.add(reservation);
@@ -1064,6 +1228,22 @@ public class AdminDashboardController implements Initializable {
         col_reservationUser.setCellValueFactory(new PropertyValueFactory<>("username"));
         col_reservationBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
         col_reservationDate.setCellValueFactory(new PropertyValueFactory<>("reservationDate"));
+        
+        // Set up custom cell factory for reservation date
+        col_reservationDate.setCellFactory(column -> {
+            return new TableCell<Reservation, LocalDateTime>() {
+                @Override
+                protected void updateItem(LocalDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                    }
+                }
+            };
+        });
+        
         col_reservationStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         
         reservations_tableView.setItems(listReservations);
@@ -1155,7 +1335,7 @@ public class AdminDashboardController implements Initializable {
                     prepare = connect.prepareStatement(createBorrow);
                     prepare.setString(1, borrowerId);
                     prepare.setInt(2, bookId);
-                    prepare.setDate(3, Date.valueOf(LocalDate.now()));
+                    prepare.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
                     prepare.setInt(4, getData.adminId);
                     prepare.executeUpdate();
 
@@ -1229,17 +1409,100 @@ public class AdminDashboardController implements Initializable {
         reservations_tableView.getSelectionModel().clearSelection();
     }
 
+    public ObservableList<CurrentBorrow> currentBorrowsList() {
+        ObservableList<CurrentBorrow> list = FXCollections.observableArrayList();
+        String sql = "SELECT * FROM View_CurrentBorrows ORDER BY BorrowDate DESC";
+        
+        connect = Database.connectDB();
+        
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+            
+            while (result.next()) {
+                list.add(new CurrentBorrow(
+                    result.getInt("EntryID"),
+                    result.getString("BorrowerID"),
+                    result.getString("BorrowerName"),
+                    result.getString("BookTitle"),
+                    result.getTimestamp("BorrowDate").toLocalDateTime()
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+
+    public void showCurrentBorrows() {
+        ObservableList<CurrentBorrow> list = currentBorrowsList();
+        
+        col_currentBorrowId.setCellValueFactory(new PropertyValueFactory<>("entryId"));
+        col_currentBorrowerId.setCellValueFactory(new PropertyValueFactory<>("borrowerId"));
+        col_currentBorrowerName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
+        col_currentBookTitle.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+        col_currentBorrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+        
+        // Set up date/time format for borrow date column
+        col_currentBorrowDate.setCellFactory(column -> {
+            return new TableCell<CurrentBorrow, LocalDateTime>() {
+                @Override
+                protected void updateItem(LocalDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                    }
+                }
+            };
+        });
+        
+        currentBorrows_tableView.setItems(list);
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         showBooks();
         showUsers();
         showBorrowRecords();
         showReservations();
+        showCurrentBorrows();
         
         setupUserTypeComboBox();
         setupUserTableListener();
         loadBorrowers();
         loadAvailableBooks();
+        
+        // Set up date/time format for columns
+        col_borrowDate.setCellFactory(column -> {
+            return new TableCell<BorrowEntry, LocalDateTime>() {
+                @Override
+                protected void updateItem(LocalDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                    }
+                }
+            };
+        });
+        
+        col_returnDate.setCellFactory(column -> {
+            return new TableCell<BorrowEntry, LocalDateTime>() {
+                @Override
+                protected void updateItem(LocalDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                    }
+                }
+            };
+        });
         
         col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));

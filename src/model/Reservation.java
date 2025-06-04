@@ -1,15 +1,15 @@
 package model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Reservation {
     private int id;
     private String username;
     private String bookTitle;
-    private LocalDate reservationDate;
+    private LocalDateTime reservationDate;
     private String status;
 
-    public Reservation(int id, String username, String bookTitle, LocalDate reservationDate, String status) {
+    public Reservation(int id, String username, String bookTitle, LocalDateTime reservationDate, String status) {
         this.id = id;
         this.username = username;
         this.bookTitle = bookTitle;
@@ -30,7 +30,7 @@ public class Reservation {
         return bookTitle;
     }
 
-    public LocalDate getReservationDate() {
+    public LocalDateTime getReservationDate() {
         return reservationDate;
     }
 
@@ -51,7 +51,7 @@ public class Reservation {
         this.bookTitle = bookTitle;
     }
 
-    public void setReservationDate(LocalDate reservationDate) {
+    public void setReservationDate(LocalDateTime reservationDate) {
         this.reservationDate = reservationDate;
     }
 

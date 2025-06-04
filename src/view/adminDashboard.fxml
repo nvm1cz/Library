@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="986.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminDashboardController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminDashboardController">
    <children>
       <BorderPane layoutX="235.0" layoutY="155.0" prefHeight="600.0" prefWidth="986.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>
@@ -48,6 +48,7 @@
                   <Button fx:id="manageUsers_btn" layoutX="25.0" layoutY="230.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Manage Users" />
                   <Button fx:id="borrowRecords_btn" layoutX="25.0" layoutY="280.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Borrow Records" />
                   <Button fx:id="reservations_btn" layoutX="25.0" layoutY="330.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Reservations" />
+                  <Button fx:id="currentBorrows_btn" layoutX="25.0" layoutY="380.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="35.0" prefWidth="170.0" styleClass="nav-btn" stylesheets="@designDashboard.css" text="Current Borrows" />
                   <Button fx:id="logout_btn" layoutX="25.0" layoutY="466.0" mnemonicParsing="false" onAction="#logout" prefHeight="35.0" prefWidth="123.0" styleClass="logout-btn" stylesheets="@designDashboard.css">
                      <graphic>
                         <Label text="Sign out" textFill="WHITE">
@@ -64,7 +65,7 @@
          <center>
             <AnchorPane fx:id="mainCenter_form" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <AnchorPane fx:id="manageBooks_form" prefHeight="521.0" prefWidth="766.0">
+                  <AnchorPane fx:id="manageBooks_form" prefHeight="521.0" prefWidth="766.0" visible="false">
                      <children>
                         <TableView fx:id="books_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
@@ -117,11 +118,11 @@
                         <TableView fx:id="borrow_tableView" layoutX="14.0" layoutY="14.0" prefHeight="400.0" prefWidth="738.0">
                            <columns>
                               <TableColumn fx:id="col_borrowId" prefWidth="70.0" text="ID" />
-                              <TableColumn fx:id="col_borrower" prefWidth="120.0" text="Borrower" />
-                              <TableColumn fx:id="col_book" prefWidth="200.0" text="Book" />
+                              <TableColumn fx:id="col_borrowName" prefWidth="120.0" text="Borrower" />
+                              <TableColumn fx:id="col_borrowBook" prefWidth="200.0" text="Book" />
                               <TableColumn fx:id="col_borrowDate" prefWidth="120.0" text="Borrow Date" />
                               <TableColumn fx:id="col_returnDate" prefWidth="120.0" text="Return Date" />
-                              <TableColumn fx:id="col_status" prefWidth="108.0" text="Status" />
+                              <TableColumn fx:id="col_borrowStatus" prefWidth="108.0" text="Status" />
                            </columns>
                         </TableView>
                         <AnchorPane layoutX="14.0" layoutY="425.0" prefHeight="85.0" prefWidth="738.0" styleClass="card-form" stylesheets="@designDashboard.css">
@@ -153,6 +154,19 @@
                               <Button fx:id="clearReservation_btn" layoutX="174.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="30.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane fx:id="currentBorrows_form" prefHeight="600.0" prefWidth="873.0">
+                     <children>
+                        <TableView fx:id="currentBorrows_tableView" layoutX="20.0" layoutY="20.0" prefHeight="492.0" prefWidth="839.0">
+                           <columns>
+                              <TableColumn fx:id="col_currentBorrowId" prefWidth="110.66667175292969" text="Entry ID" />
+                              <TableColumn fx:id="col_currentBorrowerId" prefWidth="109.33331298828125" text="Borrower ID" />
+                              <TableColumn fx:id="col_currentBorrowerName" prefWidth="200.0" text="Borrower Name" />
+                              <TableColumn fx:id="col_currentBookTitle" prefWidth="242.66668701171875" text="Book Title" />
+                              <TableColumn fx:id="col_currentBorrowDate" prefWidth="197.33319091796875" text="Borrow Date" />
+                           </columns>
+                        </TableView>
                      </children>
                   </AnchorPane>
                </children>
