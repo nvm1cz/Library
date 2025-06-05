@@ -8,30 +8,46 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="469.0" prefWidth="691.0" styleClass="login-form" stylesheets="@designLogin.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminLoginController">
+<AnchorPane prefHeight="600.0" prefWidth="900.0" styleClass="login-form" stylesheets="@designLogin.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.AdminLoginController">
    <children>
-      <AnchorPane layoutX="85.0" layoutY="68.0" prefHeight="333.0" prefWidth="522.0" styleClass="card-form" stylesheets="@designLogin.css">
+      <AnchorPane layoutX="68.0" layoutY="59.0" prefHeight="481.0" prefWidth="763.0" styleClass="card-form" stylesheets="@designLogin.css">
          <children>
-            <FontAwesomeIcon fill="WHITE" glyphName="USER_SECRET" layoutX="231.0" layoutY="71.0" size="5em" />
-            <Label layoutX="176.0" layoutY="89.0" text="Admin Login" textFill="WHITE">
+            <FontAwesomeIcon fill="WHITE" glyphName="USER_SECRET" layoutX="346.0" layoutY="99.0" size="7em" text="" />
+            <Label layoutX="286.0" layoutY="132.0" text="Admin Login" textFill="WHITE">
                <font>
-                  <Font name="Berlin Sans FB" size="30.0" />
+                  <Font name="Berlin Sans FB" size="36.0" />
                </font>
             </Label>
-            <TextField fx:id="username" layoutX="161.0" layoutY="141.0" prefHeight="30.0" prefWidth="200.0" promptText="Username" styleClass="textfield" stylesheets="@designLogin.css" />
-            <PasswordField fx:id="password" layoutX="161.0" layoutY="186.0" prefHeight="30.0" prefWidth="200.0" promptText="Password" styleClass="textfield" stylesheets="@designLogin.css" />
-            <Button fx:id="loginBtn" layoutX="211.0" layoutY="236.0" mnemonicParsing="false" onAction="#login" prefHeight="35.0" prefWidth="100.0" styleClass="login-btn" stylesheets="@designLogin.css" text="Login" />
-            <Button fx:id="studentLoginBtn" layoutX="161.0" layoutY="286.0" mnemonicParsing="false" onAction="#switchToStudentLogin" prefHeight="25.0" prefWidth="200.0" styleClass="switch-btn" text="Switch to Student Login" textFill="WHITE" />
+            <TextField fx:id="username" layoutX="232.0" layoutY="201.0" prefHeight="40.0" prefWidth="300.0" promptText="Username" styleClass="textfield" stylesheets="@designLogin.css">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </TextField>
+            <PasswordField fx:id="password" layoutX="232.0" layoutY="261.0" prefHeight="40.0" prefWidth="300.0" promptText="Password" styleClass="textfield" stylesheets="@designLogin.css">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </PasswordField>
+            <Button fx:id="loginBtn" layoutX="307.0" layoutY="334.0" mnemonicParsing="false" onAction="#login" prefHeight="45.0" prefWidth="150.0" styleClass="login-btn" stylesheets="@designLogin.css" text="Login">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="studentLoginBtn" layoutX="232.0" layoutY="403.0" mnemonicParsing="false" onAction="#switchToStudentLogin" prefHeight="35.0" prefWidth="300.0" styleClass="switch-btn" text="Switch to Student Login" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Button>
          </children>
       </AnchorPane>
-      <Button fx:id="close" layoutX="641.0" layoutY="1.0" mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="50.0" styleClass="close" stylesheets="@designLogin.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
+      <Button fx:id="close" layoutX="838.0" layoutY="2.0" mnemonicParsing="false" onAction="#exit" prefHeight="35.0" prefWidth="60.0" styleClass="close" stylesheets="@designLogin.css" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
          <graphic>
-            <FontAwesomeIcon fill="WHITE" glyphName="CLOSE" size="1.5em" />
+            <FontAwesomeIcon fill="WHITE" glyphName="CLOSE" size="2em" />
          </graphic>
       </Button>
-      <Button fx:id="minimize" layoutX="591.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="25.0" prefWidth="50.0" styleClass="minimize" stylesheets="@designLogin.css">
+      <Button fx:id="minimize" layoutX="768.0" layoutY="2.0" mnemonicParsing="false" onAction="#minimize" prefHeight="35.0" prefWidth="60.0" styleClass="minimize" stylesheets="@designLogin.css">
          <graphic>
-            <FontAwesomeIcon fill="WHITE" glyphName="MINUS" size="1.5em" />
+            <FontAwesomeIcon fill="WHITE" glyphName="MINUS" size="2em" />
          </graphic>
       </Button>
    </children>

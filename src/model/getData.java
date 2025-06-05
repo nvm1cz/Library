@@ -6,4 +6,5 @@ public class getData {
     public static String borrowerId;
     public static String borrowerName;
     public static Integer bookId;
+    public static Integer accountId;
 } 

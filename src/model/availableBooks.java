@@ -3,18 +3,22 @@ package model;
 public class availableBooks {
     private int bookId;
     private String title;
-    private String author;
+    private String authors;
+    private String genres;
     private int totalCopies;
     private int availableCopies;
     private int totalBorrows;
+    private double avgRating;
 
-    public availableBooks(int bookId, String title, String author, int totalCopies, int availableCopies, int totalBorrows) {
+    public availableBooks(int bookId, String title, String authors, String genres, int totalCopies, int availableCopies, int totalBorrows, double avgRating) {
         this.bookId = bookId;
         this.title = title;
-        this.author = author;
+        this.authors = authors;
+        this.genres = genres;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
         this.totalBorrows = totalBorrows;
+        this.avgRating = avgRating;
     }
 
     public int getBookId() {
@@ -25,8 +29,12 @@ public class availableBooks {
         return title;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAuthors() {
+        return authors;
+    }
+
+    public String getGenres() {
+        return genres;
     }
 
     public int getTotalCopies() {
@@ -41,6 +49,10 @@ public class availableBooks {
         return totalBorrows;
     }
 
+    public double getAvgRating() {
+        return avgRating;
+    }
+
     public void setBookId(int bookId) {
         this.bookId = bookId;
     }
@@ -49,8 +61,12 @@ public class availableBooks {
         this.title = title;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setAuthors(String authors) {
+        this.authors = authors;
+    }
+
+    public void setGenres(String genres) {
+        this.genres = genres;
     }
 
     public void setTotalCopies(int totalCopies) {
@@ -63,5 +79,9 @@ public class availableBooks {
 
     public void setTotalBorrows(int totalBorrows) {
         this.totalBorrows = totalBorrows;
+    }
+
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
     }
 } 
