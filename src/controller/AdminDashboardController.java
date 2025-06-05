@@ -661,27 +661,17 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void returnBook() {
-        BorrowEntry selected = borrow_tableView.getSelectionModel().getSelectedItem();
+        CurrentBorrow selected = currentBorrows_tableView.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error Message");
             alert.setHeaderText(null);
-            alert.setContentText("Please select a borrow record to return");
-            alert.showAndWait();
-            return;
-        }
-
-        if (selected.getReturnDate() != null) {
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Error Message");
-            alert.setHeaderText(null);
-            alert.setContentText("This book has already been returned");
+            alert.setContentText("Please select a current borrow record to return");
             alert.showAndWait();
             return;
         }
 
         connect = Database.connectDB();
-        
         try {
             // Call the ReturnBook stored procedure
             String sql = "{CALL ReturnBook(?)}";
@@ -695,10 +685,8 @@ public class AdminDashboardController implements Initializable {
             alert.setContentText("Successfully returned the book!");
             alert.showAndWait();
 
-            showBorrowRecords();
+            showCurrentBorrows();
             loadAvailableBooks();
-            clearBorrowFields();
-            
         } catch (Exception e) {
             e.printStackTrace();
             Alert alert = new Alert(AlertType.ERROR);

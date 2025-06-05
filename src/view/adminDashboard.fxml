@@ -160,7 +160,7 @@
                         <DatePicker fx:id="recordDate_to" layoutX="580.0" layoutY="10.0" prefHeight="35.0" prefWidth="130.0" promptText="Date To" />
                         <Button layoutX="727.0" layoutY="10.0" mnemonicParsing="false" onAction="#searchBorrowRecords" prefHeight="35.0" prefWidth="80.0" styleClass="add-btn" text="Search" />
                         <Button layoutX="821.0" layoutY="10.0" mnemonicParsing="false" onAction="#clearBorrowRecordSearch" prefHeight="35.0" prefWidth="80.0" styleClass="clear-btn" text="Clear" />
-                        <TableView fx:id="borrow_tableView" layoutX="20.0" layoutY="54.0" prefHeight="516.0" prefWidth="1060.0">
+                        <TableView fx:id="borrow_tableView" layoutX="20.0" layoutY="54.0" prefHeight="595.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_borrowId" prefWidth="100.0" text="ID" />
                               <TableColumn fx:id="col_borrowName" prefWidth="200.0" text="Borrower" />
@@ -170,12 +170,7 @@
                               <TableColumn fx:id="col_borrowStatus" prefWidth="78.6666259765625" text="Status" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
-                           <children>
-                              <Button fx:id="returnBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Return Book" />
-                              <Button fx:id="clearBorrow_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
-                           </children>
-                        </AnchorPane>
+                        <AnchorPane layoutX="20.0" layoutY="667.0" prefHeight="21.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css" />
                      </children>
                   </AnchorPane>
                   <AnchorPane fx:id="reservations_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
@@ -201,7 +196,7 @@
                   </AnchorPane>
                   <AnchorPane fx:id="currentBorrows_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="currentBorrows_tableView" layoutX="20.0" layoutY="20.0" prefHeight="660.0" prefWidth="1060.0">
+                        <TableView fx:id="currentBorrows_tableView" layoutX="20.0" layoutY="20.0" prefHeight="614.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_currentBorrowId" prefWidth="120.0" text="Entry ID" />
                               <TableColumn fx:id="col_currentBorrowerId" prefWidth="160.0" text="Borrower ID" />
@@ -210,6 +205,7 @@
                               <TableColumn fx:id="col_currentBorrowDate" prefWidth="180.0" text="Borrow Date" />
                            </columns>
                         </TableView>
+                        <Button fx:id="returnBook_btn" layoutX="20.0" layoutY="647.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Return Book" />
                      </children>
                   </AnchorPane>
                </children>
