@@ -221,9 +221,6 @@ public class AdminDashboardController implements Initializable {
     private TableColumn<Reservation, String> col_reservationStatus;
 
     @FXML
-    private ComboBox<String> reservation_status_combo;
-
-    @FXML
     private Button currentBorrows_btn;
 
     @FXML
@@ -261,6 +258,25 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private TableColumn<availableBooks, Double> col_avgRating;
+
+    @FXML
+    private Button fulfilled_btn;
+    @FXML
+    private Button cancel_btn;
+
+    @FXML
+    private TextField user_search_field;
+
+    @FXML
+    private TextField borrowerName_search_field;
+    @FXML
+    private TextField bookTitle_search_field;
+    @FXML
+    private DatePicker recordDate_from;
+    @FXML
+    private DatePicker recordDate_to;
+
+    private String selectedReservationStatus = null;
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -429,20 +445,44 @@ public class AdminDashboardController implements Initializable {
         showBooks();
     }
 
-    public ObservableList<BorrowEntry> borrowList() {
+    public ObservableList<BorrowEntry> borrowList(String borrowerName, String bookTitle, LocalDate recordFrom, LocalDate recordTo) {
         ObservableList<BorrowEntry> list = FXCollections.observableArrayList();
         String sql = "SELECT be.*, b.FullName as BorrowerName, bk.Title as BookTitle " +
                     "FROM BorrowEntry be " +
                     "JOIN Borrower b ON be.BorrowerID = b.BorrowerID " +
-                    "JOIN Book bk ON be.BookID = bk.BookID " +
-                    "ORDER BY be.EntryID DESC";
-        
+                    "JOIN Book bk ON be.BookID = bk.BookID WHERE 1=1 ";
+        if (borrowerName != null && !borrowerName.trim().isEmpty()) {
+            sql += "AND LOWER(b.FullName) LIKE ? ";
+        }
+        if (bookTitle != null && !bookTitle.trim().isEmpty()) {
+            sql += "AND LOWER(bk.Title) LIKE ? ";
+        }
+        if (recordFrom != null) {
+            sql += "AND (be.BorrowDate >= ? OR (be.ReturnDate IS NOT NULL AND be.ReturnDate >= ?)) ";
+        }
+        if (recordTo != null) {
+            sql += "AND (be.BorrowDate <= ? OR (be.ReturnDate IS NOT NULL AND be.ReturnDate <= ?)) ";
+        }
+        sql += "ORDER BY be.EntryID DESC";
         connect = Database.connectDB();
-        
-        try { 
+        try {
             prepare = connect.prepareStatement(sql);
+            int idx = 1;
+            if (borrowerName != null && !borrowerName.trim().isEmpty()) {
+                prepare.setString(idx++, "%" + borrowerName.trim().toLowerCase() + "%");
+            }
+            if (bookTitle != null && !bookTitle.trim().isEmpty()) {
+                prepare.setString(idx++, "%" + bookTitle.trim().toLowerCase() + "%");
+            }
+            if (recordFrom != null) {
+                prepare.setDate(idx++, Date.valueOf(recordFrom));
+                prepare.setDate(idx++, Date.valueOf(recordFrom));
+            }
+            if (recordTo != null) {
+                prepare.setDate(idx++, Date.valueOf(recordTo));
+                prepare.setDate(idx++, Date.valueOf(recordTo));
+            }
             result = prepare.executeQuery();
-            
             while (result.next()) {
                 java.sql.Timestamp returnTimestamp = result.getTimestamp("ReturnDate");
                 list.add(new BorrowEntry(
@@ -459,21 +499,47 @@ public class AdminDashboardController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         return list;
     }
 
     public void showBorrowRecords() {
-        ObservableList<BorrowEntry> list = borrowList();
-        
+        String borrowerName = borrowerName_search_field.getText();
+        String bookTitle = bookTitle_search_field.getText();
+        LocalDate recordFrom = recordDate_from.getValue();
+        LocalDate recordTo = recordDate_to.getValue();
+        ObservableList<BorrowEntry> list = borrowList(borrowerName, bookTitle, recordFrom, recordTo);
         col_borrowId.setCellValueFactory(new PropertyValueFactory<>("entryId"));
         col_borrowName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
         col_borrowBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
         col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
         col_borrowStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
         borrow_tableView.setItems(list);
+    }
+
+    @FXML
+    public void searchBorrowRecords() {
+        String borrowerName = borrowerName_search_field.getText();
+        String bookTitle = bookTitle_search_field.getText();
+        LocalDate recordFrom = recordDate_from.getValue();
+        LocalDate recordTo = recordDate_to.getValue();
+        ObservableList<BorrowEntry> list = borrowList(borrowerName, bookTitle, recordFrom, recordTo);
+        col_borrowId.setCellValueFactory(new PropertyValueFactory<>("entryId"));
+        col_borrowName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
+        col_borrowBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+        col_borrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
+        col_returnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
+        col_borrowStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        borrow_tableView.setItems(list);
+    }
+
+    @FXML
+    public void clearBorrowRecordSearch() {
+        borrowerName_search_field.clear();
+        bookTitle_search_field.clear();
+        recordDate_from.setValue(null);
+        recordDate_to.setValue(null);
+        showBorrowRecords();
     }
 
     private void loadBorrowers() {
@@ -930,19 +996,25 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    public ObservableList<UserAccount> usersList() {
+    public ObservableList<UserAccount> usersList(String searchTerm) {
         ObservableList<UserAccount> list = FXCollections.observableArrayList();
         String sql = "SELECT ua.*, b.FullName as BorrowerName " +
                     "FROM UserAccount ua " +
-                    "LEFT JOIN Borrower b ON ua.BorrowerID = b.BorrowerID " +
-                    "ORDER BY ua.AccountID";
-        
+                    "LEFT JOIN Borrower b ON ua.BorrowerID = b.BorrowerID ";
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            sql += "WHERE LOWER(ua.Username) LIKE ? OR LOWER(b.FullName) LIKE ? OR LOWER(ua.BorrowerID) LIKE ? ";
+        }
+        sql += "ORDER BY ua.AccountID";
         connect = Database.connectDB();
-        
         try {
             prepare = connect.prepareStatement(sql);
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                String pattern = "%" + searchTerm.trim().toLowerCase() + "%";
+                prepare.setString(1, pattern);
+                prepare.setString(2, pattern);
+                prepare.setString(3, pattern);
+            }
             result = prepare.executeQuery();
-            
             while (result.next()) {
                 list.add(new UserAccount(
                     result.getInt("AccountID"),
@@ -955,20 +1027,33 @@ public class AdminDashboardController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         return list;
     }
 
     public void showUsers() {
-        ObservableList<UserAccount> list = usersList();
-        
+        showUsers("");
+    }
+
+    public void showUsers(String searchTerm) {
+        ObservableList<UserAccount> list = usersList(searchTerm);
         col_accountId.setCellValueFactory(new PropertyValueFactory<>("accountId"));
         col_username.setCellValueFactory(new PropertyValueFactory<>("username"));
         col_password.setCellValueFactory(new PropertyValueFactory<>("password"));
         col_borrowerId.setCellValueFactory(new PropertyValueFactory<>("borrowerId"));
         col_borrowerName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
-        
         users_tableView.setItems(list);
+    }
+
+    @FXML
+    public void searchUsers() {
+        String searchTerm = user_search_field.getText();
+        showUsers(searchTerm);
+    }
+
+    @FXML
+    public void clearUserSearch() {
+        user_search_field.clear();
+        showUsers("");
     }
 
     private void loadAvailableBorrowers() {
@@ -1299,19 +1384,12 @@ public class AdminDashboardController implements Initializable {
         col_reservationStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         
         reservations_tableView.setItems(listReservations);
-        setupReservationStatusComboBox();
-    }
-
-    private void setupReservationStatusComboBox() {
-        reservation_status_combo.setItems(FXCollections.observableArrayList(
-            "Pending", "Fulfilled", "Canceled"
-        ));
     }
 
     @FXML
     public void updateReservationStatus() {
         Reservation selectedReservation = reservations_tableView.getSelectionModel().getSelectedItem();
-        String newStatus = reservation_status_combo.getValue();
+        String newStatus = selectedReservationStatus;
         
         if (selectedReservation == null) {
             Alert alert = new Alert(AlertType.ERROR);
@@ -1471,8 +1549,10 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     public void clearReservationFields() {
-        reservation_status_combo.setValue(null);
         reservations_tableView.getSelectionModel().clearSelection();
+        selectedReservationStatus = null;
+        fulfilled_btn.setStyle("");
+        cancel_btn.setStyle("");
     }
 
     public ObservableList<CurrentBorrow> currentBorrowsList() {
@@ -1526,6 +1606,20 @@ public class AdminDashboardController implements Initializable {
         });
         
         currentBorrows_tableView.setItems(list);
+    }
+
+    @FXML
+    private void setFulfilledStatus() {
+        selectedReservationStatus = "Fulfilled";
+        fulfilled_btn.setStyle("-fx-border-color: #1976D2; -fx-border-width: 2px; -fx-background-color: #4CAF50; -fx-text-fill: white;");
+        cancel_btn.setStyle("");
+    }
+
+    @FXML
+    private void setCancelStatus() {
+        selectedReservationStatus = "Canceled";
+        cancel_btn.setStyle("-fx-border-color: #1976D2; -fx-border-width: 2px; -fx-background-color: #F44336; -fx-text-fill: white;");
+        fulfilled_btn.setStyle("");
     }
 
     @Override

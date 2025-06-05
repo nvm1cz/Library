@@ -205,27 +205,29 @@ and open the template in the editor.
 }
 
 .add-btn {
-    -fx-background-color: #2d5a27;
+    -fx-background-color: #388e3c;
     -fx-cursor: hand;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-background-radius: 5px;
+    -fx-font-weight: 600;
 }
 
 .add-btn:hover {
-    -fx-background-color: #367331;
+    -fx-background-color: #2e7031;
 }
 
 .delete-btn {
-    -fx-background-color: #ae2d3c;
+    -fx-background-color: #c62828;
     -fx-cursor: hand;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-background-radius: 5px;
+    -fx-font-weight: 600;
 }
 
 .delete-btn:hover {
-    -fx-background-color: #cc3547;
+    -fx-background-color: #8e0000;
 }
 
 .clear-btn {
@@ -346,15 +348,17 @@ and open the template in the editor.
 }
 
 .cancel-btn {
-    -fx-background-color: #6c757d;
+    -fx-background-color: #c62828;
     -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-padding: 8px 16px;
-    -fx-background-radius: 4px;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
 }
 
 .cancel-btn:hover {
-    -fx-background-color: #5a6268;
+    -fx-background-color: #8e0000;
 }
 
 .star-btn {
@@ -419,4 +423,17 @@ and open the template in the editor.
 .book-card:hover {
     -fx-effect: dropshadow(three-pass-box, rgba(66,120,167,0.15), 12, 0, 0, 4);
     -fx-border-color: #4278a7;
+}
+
+.fulfilled-btn {
+    -fx-background-color: #388e3c;
+    -fx-text-fill: white;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+.fulfilled-btn:hover {
+    -fx-background-color: #2e7031;
 }

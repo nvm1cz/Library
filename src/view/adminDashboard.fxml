@@ -3,6 +3,7 @@
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -94,7 +95,11 @@
                <children>
                   <AnchorPane fx:id="manageBooks_form" prefHeight="700.0" prefWidth="1100.0">
                      <children>
-                        <TableView fx:id="books_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
+                        <TextField fx:id="search_field" layoutX="20.0" layoutY="10.0" prefHeight="35.0" prefWidth="300.0" promptText="Search..." styleClass="textfield" />
+                        <ComboBox fx:id="searchTypeCombo" layoutX="330.0" layoutY="10.0" prefHeight="35.0" prefWidth="140.0" promptText="Type" />
+                        <Button layoutX="480.0" layoutY="10.0" mnemonicParsing="false" onAction="#searchBooks" prefHeight="35.0" prefWidth="100.0" styleClass="add-btn" text="Search" />
+                        <Button layoutX="590.0" layoutY="10.0" mnemonicParsing="false" onAction="#clearSearch" prefHeight="35.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                        <TableView fx:id="books_tableView" layoutX="20.0" layoutY="60.0" prefHeight="510.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_bookTitle" prefWidth="226.66668701171875" text="Title" />
                               <TableColumn fx:id="col_author" prefWidth="200.0" text="Author" />
@@ -121,7 +126,10 @@
                   </AnchorPane>
                   <AnchorPane fx:id="manageUsers_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="users_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
+                        <TextField fx:id="user_search_field" layoutX="20.0" layoutY="10.0" prefHeight="35.0" prefWidth="300.0" promptText="Search Username, Borrower Name, or Borrower ID..." styleClass="textfield" />
+                        <Button layoutX="330.0" layoutY="10.0" mnemonicParsing="false" onAction="#searchUsers" prefHeight="35.0" prefWidth="100.0" styleClass="add-btn" text="Search" />
+                        <Button layoutX="440.0" layoutY="10.0" mnemonicParsing="false" onAction="#clearUserSearch" prefHeight="35.0" prefWidth="100.0" styleClass="clear-btn" text="Clear" />
+                        <TableView fx:id="users_tableView" layoutX="20.0" layoutY="57.0" prefHeight="513.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_accountId" prefWidth="100.0" text="Account ID" />
                               <TableColumn fx:id="col_username" prefWidth="200.0" text="Username" />
@@ -146,7 +154,13 @@
                   </AnchorPane>
                   <AnchorPane fx:id="borrowRecords_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="borrow_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
+                        <TextField fx:id="borrowerName_search_field" layoutX="20.0" layoutY="10.0" prefHeight="35.0" prefWidth="200.0" promptText="Borrower Name..." styleClass="textfield" />
+                        <TextField fx:id="bookTitle_search_field" layoutX="230.0" layoutY="10.0" prefHeight="35.0" prefWidth="200.0" promptText="Book Title..." styleClass="textfield" />
+                        <DatePicker fx:id="recordDate_from" layoutX="440.0" layoutY="10.0" prefHeight="35.0" prefWidth="130.0" promptText="Date From" />
+                        <DatePicker fx:id="recordDate_to" layoutX="580.0" layoutY="10.0" prefHeight="35.0" prefWidth="130.0" promptText="Date To" />
+                        <Button layoutX="727.0" layoutY="10.0" mnemonicParsing="false" onAction="#searchBorrowRecords" prefHeight="35.0" prefWidth="80.0" styleClass="add-btn" text="Search" />
+                        <Button layoutX="821.0" layoutY="10.0" mnemonicParsing="false" onAction="#clearBorrowRecordSearch" prefHeight="35.0" prefWidth="80.0" styleClass="clear-btn" text="Clear" />
+                        <TableView fx:id="borrow_tableView" layoutX="20.0" layoutY="54.0" prefHeight="516.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_borrowId" prefWidth="100.0" text="ID" />
                               <TableColumn fx:id="col_borrowName" prefWidth="200.0" text="Borrower" />
@@ -158,9 +172,6 @@
                         </TableView>
                         <AnchorPane layoutX="20.0" layoutY="581.0" prefHeight="107.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <ComboBox fx:id="borrower_combo" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Select Borrower" />
-                              <ComboBox fx:id="book_combo" layoutX="340.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Select Book" />
-                              <Button fx:id="addBorrow_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#addBorrow" prefHeight="35.0" prefWidth="140.0" styleClass="add-btn" text="Add Borrow" />
                               <Button fx:id="returnBook_btn" layoutX="180.0" layoutY="60.0" mnemonicParsing="false" onAction="#returnBook" prefHeight="35.0" prefWidth="140.0" styleClass="update-btn" text="Return Book" />
                               <Button fx:id="clearBorrow_btn" layoutX="340.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearBorrowFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
@@ -169,7 +180,7 @@
                   </AnchorPane>
                   <AnchorPane fx:id="reservations_form" prefHeight="700.0" prefWidth="1100.0" visible="false">
                      <children>
-                        <TableView fx:id="reservations_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1060.0">
+                        <TableView fx:id="reservations_tableView" layoutX="20.0" layoutY="20.0" prefHeight="589.0" prefWidth="1060.0">
                            <columns>
                               <TableColumn fx:id="col_reservationId" prefWidth="100.0" text="ID" />
                               <TableColumn fx:id="col_reservationUser" prefWidth="240.0" text="User" />
@@ -178,11 +189,12 @@
                               <TableColumn fx:id="col_reservationStatus" prefWidth="180.0" text="Status" />
                            </columns>
                         </TableView>
-                        <AnchorPane layoutX="20.0" layoutY="583.0" prefHeight="105.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
+                        <AnchorPane layoutX="20.0" layoutY="623.0" prefHeight="65.0" prefWidth="1060.0" styleClass="card-form" stylesheets="@designDashboard.css">
                            <children>
-                              <ComboBox fx:id="reservation_status_combo" layoutX="20.0" layoutY="15.0" prefHeight="35.0" prefWidth="300.0" promptText="Change Status" />
-                              <Button fx:id="updateReservation_btn" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" onAction="#updateReservationStatus" prefHeight="35.0" prefWidth="200.0" styleClass="update-btn" text="Update Status" />
-                              <Button fx:id="clearReservation_btn" layoutX="240.0" layoutY="60.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
+                              <Button fx:id="fulfilled_btn" layoutX="237.0" layoutY="14.0" mnemonicParsing="false" onAction="#setFulfilledStatus" prefHeight="35.0" prefWidth="140.0" styleClass="fulfilled-btn" text="Fulfilled" />
+                              <Button fx:id="cancel_btn" layoutX="397.0" layoutY="14.0" mnemonicParsing="false" onAction="#setCancelStatus" prefHeight="35.0" prefWidth="140.0" styleClass="cancel-btn" text="Cancel" />
+                              <Button fx:id="updateReservation_btn" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#updateReservationStatus" prefHeight="35.0" prefWidth="200.0" styleClass="update-btn" text="Update Status" />
+                              <Button fx:id="clearReservation_btn" layoutX="558.0" layoutY="14.0" mnemonicParsing="false" onAction="#clearReservationFields" prefHeight="35.0" prefWidth="140.0" styleClass="clear-btn" text="Clear" />
                            </children>
                         </AnchorPane>
                      </children>
