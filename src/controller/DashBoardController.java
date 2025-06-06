@@ -429,7 +429,7 @@ public class DashBoardController implements Initializable {
                     int accountId = result.getInt("AccountID");
 
                     // Call stored procedure to check if user can reserve this book
-                    String checkSql = "{CALL CheckCanReserveBook(?, ?, ?)}";
+                    String checkSql = "{CALL Procedure_CheckCanReserveBook(?, ?, ?)}";
                     CallableStatement callStmt = connect.prepareCall(checkSql);
                     callStmt.setInt(1, accountId);
                     callStmt.setInt(2, book.getBookId());
@@ -1030,7 +1030,7 @@ public void exit() {
                 int accountId = result.getInt("AccountID");
 
                 // Call stored procedure to check if user can reserve this book
-                String checkSql = "{CALL CheckCanReserveBook(?, ?, ?)}";
+                String checkSql = "{CALL Procedure_CheckCanReserveBook(?, ?, ?)}";
                 CallableStatement callStmt = connect.prepareCall(checkSql);
                 callStmt.setInt(1, accountId);
                 callStmt.setInt(2, book.getBookId());
