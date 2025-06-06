@@ -18,7 +18,6 @@ public class CurrentBorrow {
         this.borrowDate = borrowDate;
     }
 
-    // Getters
     public int getEntryId() {
         return entryId;
     }
@@ -39,7 +38,6 @@ public class CurrentBorrow {
         return borrowDate;
     }
 
-    // Setters
     public void setEntryId(int entryId) {
         this.entryId = entryId;
     }

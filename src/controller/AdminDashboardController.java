@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.sql.Timestamp;
 import java.sql.CallableStatement;
 
 import dao.DBConnect;
@@ -36,7 +35,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
@@ -143,19 +141,7 @@ public class AdminDashboardController implements Initializable {
     private TextField book_author;
 
     @FXML
-    private TextField book_totalCopies;
-
-    @FXML
     private TextField book_quantity;
-
-    @FXML
-    private Button addBook_btn;
-
-    @FXML
-    private Button deleteBook_btn;
-
-    @FXML
-    private Button clearBook_btn;
 
     @FXML
     private TextField delete_quantity;
@@ -186,9 +172,6 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private ComboBox<Borrower> borrower_combo;
-
-    @FXML
-    private ComboBox<availableBooks> book_combo;
 
     @FXML
     private Button addBorrow_btn;
@@ -280,7 +263,6 @@ public class AdminDashboardController implements Initializable {
 
     private Connection connect;
     private PreparedStatement prepare;
-    private Statement statement;
     private ResultSet result;
 
     private double x = 0;
@@ -295,8 +277,6 @@ public class AdminDashboardController implements Initializable {
             this.name = name;
         }
 
-        public String getId() { return id; }
-        public String getName() { return name; }
 
         @Override
         public String toString() {
@@ -595,70 +575,16 @@ public class AdminDashboardController implements Initializable {
                     result.getInt("TotalCopies"),
                     result.getInt("AvailableCopies"),
                     result.getInt("TotalBorrows"),
-                    0.0 // avgRating mặc định cho combobox
+                    0.0 
                 ));
             }
-            book_combo.setItems(books);
-            book_combo.setConverter(new StringConverter<availableBooks>() {
-                @Override
-                public String toString(availableBooks book) {
-                    return book != null ? book.getTitle() : "";
-                }
-
-                @Override
-                public availableBooks fromString(String string) {
-                    return null;
-                }
-            });
+          
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void addBorrow() {
-        String sql = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, ?, ?)";
-        
-        connect = DBConnect.connectDB();
-        
-        try {
-            Alert alert;
-            
-            if (borrower_combo.getValue() == null || book_combo.getValue() == null) {
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Please select both borrower and book");
-                alert.showAndWait();
-                return;
-            }
-
-            // Add borrow entry - trigger will handle book count updates
-            prepare = connect.prepareStatement(sql);
-            prepare.setString(1, borrower_combo.getValue().getId());
-            prepare.setInt(2, book_combo.getValue().getBookId());
-            prepare.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-            prepare.setInt(4, getData.adminId);
-            prepare.executeUpdate();
-
-            alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Success Message");
-            alert.setHeaderText(null);
-            alert.setContentText("Successfully added borrow record!");
-            alert.showAndWait();
-
-            showBorrowRecords();
-            loadAvailableBooks();
-            clearBorrowFields();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Error Message");
-            alert.setHeaderText(null);
-            alert.setContentText("Error: " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
+   
 
     public void returnBook() {
         CurrentBorrow selected = currentBorrows_tableView.getSelectionModel().getSelectedItem();
@@ -673,7 +599,6 @@ public class AdminDashboardController implements Initializable {
 
         connect = DBConnect.connectDB();
         try {
-            // Call the ReturnBook stored procedure
             String sql = "{CALL Procedure_ReturnBook(?)}";
             CallableStatement callStmt = connect.prepareCall(sql);
             callStmt.setInt(1, selected.getEntryId());
@@ -697,11 +622,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    public void clearBorrowFields() {
-        borrower_combo.setValue(null);
-        book_combo.setValue(null);
-        borrow_tableView.getSelectionModel().clearSelection();
-    }
+   
 
     public void logout() {
         try {
@@ -743,7 +664,7 @@ public class AdminDashboardController implements Initializable {
         connect = DBConnect.connectDB();
         try {
             Alert alert;
-            if (book_title.getText().isEmpty() || book_totalCopies.getText().isEmpty()) {
+            if (book_title.getText().isEmpty() || book_quantity.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
@@ -752,7 +673,7 @@ public class AdminDashboardController implements Initializable {
             } else {
                 prepare = connect.prepareStatement(callProc);
                 prepare.setString(1, book_title.getText());
-                prepare.setInt(2, Integer.parseInt(book_totalCopies.getText()));
+                prepare.setInt(2, Integer.parseInt(book_quantity.getText()));
                 prepare.execute();
                 alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Success Message");
@@ -796,8 +717,7 @@ public class AdminDashboardController implements Initializable {
                 return;
             }
 
-            // Nếu tất cả đều trống thì báo lỗi
-            if (book_title.getText().isEmpty() && book_author.getText().isEmpty() && book_totalCopies.getText().isEmpty() && book_genre.getText().isEmpty() && book_quantity.getText().isEmpty()) {
+            if (book_title.getText().isEmpty() && book_author.getText().isEmpty() && book_quantity.getText().isEmpty() && book_genre.getText().isEmpty()) {
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error Message");
                 alert.setHeaderText(null);
@@ -810,19 +730,16 @@ public class AdminDashboardController implements Initializable {
             connect.setAutoCommit(false);
             
             try {
-                // Lấy giá trị cũ nếu trường để trống
                 String newTitle = book_title.getText().isEmpty() ? selectedBook.getTitle() : book_title.getText();
-                int newTotalCopies = book_totalCopies.getText().isEmpty() ? selectedBook.getTotalCopies() : Integer.parseInt(book_totalCopies.getText());
-                // Không cập nhật availableCopies nữa
+                int newTotalCopies = book_quantity.getText().isEmpty() ? selectedBook.getTotalCopies() : Integer.parseInt(book_quantity.getText());
 
-                // Update book details (chỉ cập nhật Title và TotalCopies)
+                // Update book details
                 prepare = connect.prepareStatement(sqlBook);
                 prepare.setString(1, newTitle);
                 prepare.setInt(2, newTotalCopies);
                 prepare.setInt(3, selectedBook.getBookId());
                 prepare.executeUpdate();
 
-                // Update authors nếu có nhập
                 if (!book_author.getText().isEmpty()) {
                     // Delete existing author relationships
                     prepare = connect.prepareStatement(sqlDeleteAuthors);
@@ -853,7 +770,6 @@ public class AdminDashboardController implements Initializable {
                     }
                 }
 
-                // Update genres nếu có nhập
                 if (!book_genre.getText().isEmpty()) {
                     // Delete existing genre relationships
                     prepare = connect.prepareStatement(sqlDeleteGenres);
@@ -940,7 +856,6 @@ public class AdminDashboardController implements Initializable {
             Optional<ButtonType> option = alert.showAndWait();
             
             if (option.get().equals(ButtonType.OK)) {
-                // Note: BookAuthor records will be automatically deleted due to CASCADE
                 prepare = connect.prepareStatement(sql);
                 prepare.setInt(1, selectedBook.getBookId());
                 prepare.executeUpdate();
@@ -968,7 +883,7 @@ public class AdminDashboardController implements Initializable {
     public void clearBookFields() {
         book_title.setText("");
         book_author.setText("");
-        book_totalCopies.setText("");
+        book_quantity.setText("");
         getData.bookId = null;
     }
 
@@ -980,7 +895,7 @@ public class AdminDashboardController implements Initializable {
             book_title.setText(selectedBook.getTitle());
             book_author.setText(selectedBook.getAuthors());
             book_genre.setText(selectedBook.getGenres());
-            book_totalCopies.setText(String.valueOf(selectedBook.getTotalCopies()));
+            book_quantity.setText(String.valueOf(selectedBook.getTotalCopies()));
         }
     }
 
@@ -1044,38 +959,9 @@ public class AdminDashboardController implements Initializable {
         showUsers("");
     }
 
-    private void loadAvailableBorrowers() {
-        String sql = "SELECT BorrowerID, FullName FROM Borrower ORDER BY FullName";
-        connect = DBConnect.connectDB();
-        
-        try {
-            prepare = connect.prepareStatement(sql);
-            result = prepare.executeQuery();
-            
-            ObservableList<Borrower> borrowers = FXCollections.observableArrayList();
-            while (result.next()) {
-                borrowers.add(new Borrower(
-                    result.getString("BorrowerID"),
-                    result.getString("FullName")
-                ));
-            }
-            
-            // Set items for borrower combo in borrow records
-            if (borrower_combo != null) {
-                borrower_combo.setItems(borrowers);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void setupUserTypeComboBox() {
         userType_combo.setItems(FXCollections.observableArrayList("SV", "ND"));
-        userType_combo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                // No need to load borrowers anymore since we removed the borrower_field
-            }
-        });
+        
     }
 
     public void addUser() {
@@ -1286,7 +1172,7 @@ public class AdminDashboardController implements Initializable {
                 alert.showAndWait();
 
                 showUsers();
-                loadAvailableBorrowers();
+                loadBorrowers();
                 clearUserFields();
             }
             
@@ -1304,7 +1190,7 @@ public class AdminDashboardController implements Initializable {
     }
 
     // Add selection listener for users table
-    private void setupUserTableListener() {
+   private void setupUserTableListener() {
         users_tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 username_field.setText(newSelection.getUsername());
@@ -1312,7 +1198,7 @@ public class AdminDashboardController implements Initializable {
                 borrower_name.setText(newSelection.getBorrowerName());
             }
         });
-    }
+    } 
 
     public ObservableList<Reservation> reservationsList() {
         ObservableList<Reservation> listReservations = FXCollections.observableArrayList();
@@ -1398,7 +1284,6 @@ public class AdminDashboardController implements Initializable {
         }
 
         if (newStatus.equals("Fulfilled")) {
-            // Gọi procedure ApproveReservation
             String callProc = "CALL Procedure_ApproveReservation(?)";
             connect = DBConnect.connectDB();
             try {
@@ -1406,8 +1291,6 @@ public class AdminDashboardController implements Initializable {
                 prepare.setInt(1, selectedReservation.getId());
                 prepare.execute();
 
-                // Sau khi procedure thành công, thêm bản ghi vào BorrowEntry
-                // Lấy AccountID, BookID từ reservation
                 String getInfo = "SELECT r.BookID, ua.BorrowerID FROM Reservation r JOIN UserAccount ua ON r.AccountID = ua.AccountID WHERE r.ReservationID = ?";
                 PreparedStatement ps = connect.prepareStatement(getInfo);
                 ps.setInt(1, selectedReservation.getId());
@@ -1427,7 +1310,6 @@ public class AdminDashboardController implements Initializable {
                 rs.close();
                 ps.close();
 
-                // Lấy thêm tên sách (title)
                 String getTitle = "SELECT Title FROM Book WHERE BookID = ?";
                 PreparedStatement titleStmt = connect.prepareStatement(getTitle);
                 titleStmt.setInt(1, bookId);
@@ -1439,10 +1321,8 @@ public class AdminDashboardController implements Initializable {
                 titleRs.close();
                 titleStmt.close();
 
-                // Gửi notification cho user được duyệt
                 String notifAccepted = "INSERT INTO Notification(AccountID, Message, DateCreated, IsRead) VALUES (?, ?, NOW(), 0)";
                 PreparedStatement notifStmt = connect.prepareStatement(notifAccepted);
-                // Lấy AccountID từ reservation
                 String getAccountId = "SELECT AccountID FROM Reservation WHERE ReservationID = ?";
                 PreparedStatement accStmt = connect.prepareStatement(getAccountId);
                 accStmt.setInt(1, selectedReservation.getId());
@@ -1457,7 +1337,6 @@ public class AdminDashboardController implements Initializable {
                 accStmt.close();
                 notifStmt.close();
 
-                // Gửi notification cho các user bị canceled (nếu có)
                 String notifCancel = "INSERT INTO Notification(AccountID, Message, DateCreated, IsRead) " +
                     "SELECT AccountID, CONCAT('Your reservation for ''', ?, ''' has been canceled due to lack of available copies.'), NOW(), 0 " +
                     "FROM Reservation WHERE BookID = ? AND Status = 'Canceled' AND ReservationDate >= (SELECT ReservationDate FROM Reservation WHERE ReservationID = ?)";
@@ -1499,7 +1378,6 @@ public class AdminDashboardController implements Initializable {
                 
                 prepare.executeUpdate();
 
-                // Nếu là Canceled thì gửi thông báo
                 if (newStatus.equals("Canceled")) {
                     // Lấy AccountID
                     String getAccountId = "SELECT ua.AccountID FROM UserAccount ua WHERE ua.Username = ?";
@@ -1660,7 +1538,6 @@ public class AdminDashboardController implements Initializable {
             searchTypeCombo.setValue("Title");
         }
 
-        // Khi chọn dòng trong bảng sách, tự động hiển thị thông tin vào các TextField
         books_tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 selectBook();

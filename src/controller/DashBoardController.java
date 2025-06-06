@@ -1,24 +1,14 @@
 package controller;
 
-
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.ResourceBundle;
-
-import javax.swing.Action;
-
 import dao.DBConnect;
 import model.getData;
-import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -27,36 +17,23 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 import java.sql.CallableStatement;
 import java.util.Optional;
+import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
-import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
+
 import javafx.scene.control.ScrollPane;
 
 public class DashBoardController implements Initializable {
@@ -248,11 +225,9 @@ public class DashBoardController implements Initializable {
     @FXML
     private ComboBox<String> searchTypeCombo;
 
-    private Image image;
 
     private Connection connect;
     private PreparedStatement prepare;
-    private Statement statement;
     private ResultSet result;
 
     public void displayBorrowerId() {
@@ -679,7 +654,6 @@ public void exit() {
             searchTypeCombo.setItems(FXCollections.observableArrayList("Title", "Author", "Genre"));
             searchTypeCombo.setValue("Title");
         }
-        // Thêm ScrollPane cho FlowPane bằng code
         if (availableBooks_form != null && availableBooks_flowPane != null) {
             ScrollPane scrollPane = new ScrollPane(availableBooks_flowPane);
             scrollPane.setFitToWidth(true);
@@ -933,13 +907,12 @@ public void exit() {
             notificationStage.initStyle(StageStyle.UNDECORATED);
             notificationStage.setScene(scene);
             
-            // Position the notification window near the notification button
             Button notifButton = notification_btn;
             javafx.geometry.Bounds bounds = notifButton.localToScreen(notifButton.getBoundsInLocal());
             // Đặt popup lệch phải vừa phải, không rơi ra ngoài
             double screenWidth = javafx.stage.Screen.getPrimary().getVisualBounds().getWidth();
-            double popupWidth = 800; // khớp với prefWidth notification.fxml
-            double margin = 40; // cách lề phải 1 chút
+            double popupWidth = 800; 
+            double margin = 40; 
             double x = Math.min(bounds.getMaxX() - 600, screenWidth - popupWidth - margin);
             notificationStage.setX(x);
             notificationStage.setY(bounds.getMaxY() + 10);

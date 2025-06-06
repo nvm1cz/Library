@@ -5,7 +5,7 @@ public class UserAccount {
     private String username;
     private String password;
     private String borrowerId;
-    private String borrowerName;  // For display purposes
+    private String borrowerName;
 
     public UserAccount(int accountId, String username, String password, String borrowerId, String borrowerName) {
         this.accountId = accountId;

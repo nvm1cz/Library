@@ -8,19 +8,14 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
+import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import dao.DBConnect;
-import model.getData;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.scene.paint.Color;
 import javafx.geometry.Pos;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.AnchorPane;
 import java.time.LocalDate;
 
 public class NotificationController implements Initializable {
@@ -108,7 +103,6 @@ public class NotificationController implements Initializable {
     
     private void loadAllNotifications() {
         ObservableList<HBox> allNotis = FXCollections.observableArrayList();
-        // 1. Thông báo hệ thống
         String sql = "SELECT Message, DateCreated, IsRead FROM Notification WHERE AccountID = ? ORDER BY DateCreated DESC";
         connect = DBConnect.connectDB();
         try {
@@ -128,7 +122,6 @@ public class NotificationController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // 2. Sách đã trả (cho phép vote)
         String sql2 = "SELECT be.EntryID, b.Title, be.ReturnDate, (SELECT COUNT(*) FROM Review r WHERE r.EntryID = be.EntryID) > 0 as IsRated FROM BorrowEntry be JOIN Book b ON be.BookID = b.BookID WHERE be.BorrowerID = ? AND be.ReturnDate IS NOT NULL ORDER BY be.ReturnDate DESC";
         try {
             prepare = connect.prepareStatement(sql2);

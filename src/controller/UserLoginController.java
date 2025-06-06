@@ -5,23 +5,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
-import java.sql.Statement;
-
 import dao.DBConnect;
 import model.getData;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -30,7 +22,6 @@ public class UserLoginController implements Initializable {
 
     private Connection connect;
     private PreparedStatement prepare;
-    private Statement statement;
     private ResultSet result;
 
     private double x = 0;
@@ -84,7 +75,6 @@ public class UserLoginController implements Initializable {
                 if(result.next()){
                     getData.borrowerId = result.getString("BorrowerID");
                     getData.borrowerName = result.getString("FullName");
-                    // Lấy AccountID
                     String getAccountIdSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
                     PreparedStatement ps = connect.prepareStatement(getAccountIdSql);
                     ps.setString(1, getData.borrowerId);
