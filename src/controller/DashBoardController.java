@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.Action;
 
-import dao.Database;
+import dao.DBConnect;
 import model.getData;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
@@ -296,7 +296,7 @@ public class DashBoardController implements Initializable {
             }
         }
         sql += " GROUP BY b.BookID";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             if (searchTerm != null && !searchTerm.trim().isEmpty() && searchType != null) {
@@ -409,7 +409,7 @@ public class DashBoardController implements Initializable {
             
             if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
                 try {
-                    connect = Database.connectDB();
+                    connect = DBConnect.connectDB();
                     
                     // First get the AccountID for the current user
                     String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
@@ -498,7 +498,7 @@ public class DashBoardController implements Initializable {
         
         // Get borrowId for current user from borrower table
         String sql = "SELECT BorrowerID FROM Borrower WHERE BorrowerID = ?";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -737,7 +737,7 @@ public void exit() {
                     "WHERE bo.BorrowerID = ? AND br.ReturnDate IS NULL " +
                     "GROUP BY b.BookID, br.BorrowDate";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -805,7 +805,7 @@ public void exit() {
 
         if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
             try {
-                connect = Database.connectDB();
+                connect = DBConnect.connectDB();
 
                 // Update return date in BorrowEntry
                 String updateBorrowSql = "UPDATE BorrowEntry br " +
@@ -1010,7 +1010,7 @@ public void exit() {
         
         if (confirmAlert.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
             try {
-                connect = Database.connectDB();
+                connect = DBConnect.connectDB();
                 
                 // First get the AccountID for the current user
                 String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
@@ -1095,7 +1095,7 @@ public void exit() {
 
     private void addToWishlist(availableBooks book) {
         try {
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             
             // First get the AccountID for the current user
             String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
@@ -1175,7 +1175,7 @@ public void exit() {
                     "WHERE ua.BorrowerID = ? " +
                     "GROUP BY b.BookID, w.DateAdded";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -1212,7 +1212,7 @@ public void exit() {
 
     private void loadUserInfo() {
         try {
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             
             String sql = "SELECT b.FullName, b.Phone, ua.Username " +
                         "FROM Borrower b " +
@@ -1247,7 +1247,7 @@ public void exit() {
         }
         
         try {
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             
             String sql = "UPDATE Borrower SET FullName = ?, Phone = ? WHERE BorrowerID = ?";
             prepare = connect.prepareStatement(sql);
@@ -1297,7 +1297,7 @@ public void exit() {
         }
         
         try {
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             
             // Verify current password
             String checkSql = "SELECT Password FROM UserAccount WHERE BorrowerID = ?";
@@ -1374,7 +1374,7 @@ public void exit() {
                 "LEFT JOIN Author a ON ba.AuthorID = a.AuthorID " +
                 "WHERE br.BorrowerID = ? " +
                 "GROUP BY b.BookID, br.BorrowDate, br.ReturnDate";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             prepare.setString(1, getData.borrowerId);
@@ -1425,7 +1425,7 @@ public void exit() {
 
         if (confirmAlert.showAndWait().get() == ButtonType.OK) {
             try {
-                connect = Database.connectDB();
+                connect = DBConnect.connectDB();
                 
                 // Get AccountID
                 String getAccountSql = "SELECT AccountID FROM UserAccount WHERE BorrowerID = ?";
