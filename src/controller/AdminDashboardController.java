@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.sql.Timestamp;
 import java.sql.CallableStatement;
 
-import dao.Database;
+import dao.DBConnect;
 import model.getData;
 import model.BorrowEntry;
 import model.availableBooks;
@@ -383,7 +383,7 @@ public class AdminDashboardController implements Initializable {
             }
         }
         sql += " GROUP BY b.BookID";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             if (searchTerm != null && !searchTerm.trim().isEmpty() && searchType != null) {
@@ -464,7 +464,7 @@ public class AdminDashboardController implements Initializable {
             sql += "AND (be.BorrowDate <= ? OR (be.ReturnDate IS NOT NULL AND be.ReturnDate <= ?)) ";
         }
         sql += "ORDER BY be.EntryID DESC";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             int idx = 1;
@@ -544,7 +544,7 @@ public class AdminDashboardController implements Initializable {
 
     private void loadBorrowers() {
         String sql = "SELECT BorrowerID, FullName FROM Borrower ORDER BY FullName";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -579,7 +579,7 @@ public class AdminDashboardController implements Initializable {
                     "WHERE b.AvailableCopies > 0 " +
                     "GROUP BY b.BookID " +
                     "ORDER BY b.Title";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -618,7 +618,7 @@ public class AdminDashboardController implements Initializable {
     public void addBorrow() {
         String sql = "INSERT INTO BorrowEntry (BorrowerID, BookID, BorrowDate, ProcessedBy) VALUES (?, ?, ?, ?)";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -671,7 +671,7 @@ public class AdminDashboardController implements Initializable {
             return;
         }
 
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             // Call the ReturnBook stored procedure
             String sql = "{CALL ReturnBook(?)}";
@@ -740,7 +740,7 @@ public class AdminDashboardController implements Initializable {
 
     public void addBook() {
         String callProc = "CALL AddOrUpdateBook(?, ?)";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             Alert alert;
             if (book_title.getText().isEmpty() || book_totalCopies.getText().isEmpty()) {
@@ -781,7 +781,7 @@ public class AdminDashboardController implements Initializable {
         String sqlGenre = "INSERT INTO Genre (Name) VALUES (?) ON DUPLICATE KEY UPDATE GenreID=LAST_INSERT_ID(GenreID)";
         String sqlBookGenre = "INSERT INTO BookGenre (BookID, GenreID) VALUES (?, ?)";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -917,7 +917,7 @@ public class AdminDashboardController implements Initializable {
     public void deleteBook() {
         String sql = "DELETE FROM Book WHERE BookID = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -993,7 +993,7 @@ public class AdminDashboardController implements Initializable {
             sql += "WHERE LOWER(ua.Username) LIKE ? OR LOWER(b.FullName) LIKE ? OR LOWER(ua.BorrowerID) LIKE ? ";
         }
         sql += "ORDER BY ua.AccountID";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             if (searchTerm != null && !searchTerm.trim().isEmpty()) {
@@ -1046,7 +1046,7 @@ public class AdminDashboardController implements Initializable {
 
     private void loadAvailableBorrowers() {
         String sql = "SELECT BorrowerID, FullName FROM Borrower ORDER BY FullName";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -1083,7 +1083,7 @@ public class AdminDashboardController implements Initializable {
         String sqlBorrower = "INSERT INTO Borrower (BorrowerID, FullName, IsStudent) VALUES (?, ?, ?)";
         String getLastId = "SELECT BorrowerID FROM Borrower WHERE BorrowerID LIKE ? ORDER BY BorrowerID DESC LIMIT 1";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -1183,7 +1183,7 @@ public class AdminDashboardController implements Initializable {
     public void updateUser() {
         String sql = "UPDATE UserAccount SET Username = ?, Password = ? WHERE AccountID = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -1252,7 +1252,7 @@ public class AdminDashboardController implements Initializable {
     public void deleteUser() {
         String sql = "DELETE FROM UserAccount WHERE AccountID = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             Alert alert;
@@ -1322,7 +1322,7 @@ public class AdminDashboardController implements Initializable {
                     "JOIN Book b ON r.BookID = b.BookID " +
                     "ORDER BY r.ReservationDate DESC";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -1400,7 +1400,7 @@ public class AdminDashboardController implements Initializable {
         if (newStatus.equals("Fulfilled")) {
             // Gọi procedure ApproveReservation
             String callProc = "CALL ApproveReservation(?)";
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             try {
                 prepare = connect.prepareStatement(callProc);
                 prepare.setInt(1, selectedReservation.getId());
@@ -1489,7 +1489,7 @@ public class AdminDashboardController implements Initializable {
         } else {
             // Just update status for non-Fulfilled statuses
             String sql = "UPDATE Reservation SET Status = ? WHERE ReservationID = ?";
-            connect = Database.connectDB();
+            connect = DBConnect.connectDB();
             
             try {
                 Alert alert;
@@ -1547,7 +1547,7 @@ public class AdminDashboardController implements Initializable {
         ObservableList<CurrentBorrow> list = FXCollections.observableArrayList();
         String sql = "SELECT * FROM View_CurrentBorrows ORDER BY BorrowDate DESC";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);

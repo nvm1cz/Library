@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.util.ResourceBundle;
 import java.sql.Statement;
 
-import dao.Database;
+import dao.DBConnect;
 import model.getData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -26,7 +26,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class DocumentController implements Initializable {
+public class UserLoginController implements Initializable {
 
     private Connection connect;
     private PreparedStatement prepare;
@@ -64,7 +64,7 @@ public class DocumentController implements Initializable {
                     "JOIN UserAccount u ON b.BorrowerID = u.BorrowerID " +
                     "WHERE u.Username = ? AND u.Password = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try{
             prepare = connect.prepareStatement(sql);

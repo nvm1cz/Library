@@ -14,7 +14,7 @@ import javafx.scene.control.Label;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
-import dao.Database;
+import dao.DBConnect;
 import model.getData;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.scene.paint.Color;
@@ -110,7 +110,7 @@ public class NotificationController implements Initializable {
         ObservableList<HBox> allNotis = FXCollections.observableArrayList();
         // 1. Thông báo hệ thống
         String sql = "SELECT Message, DateCreated, IsRead FROM Notification WHERE AccountID = ? ORDER BY DateCreated DESC";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         try {
             prepare = connect.prepareStatement(sql);
             prepare.setInt(1, model.getData.accountId);
@@ -230,7 +230,7 @@ public class NotificationController implements Initializable {
 
         String sql = "INSERT INTO Review (EntryID, Rating, Comment) VALUES (?, ?, ?)";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -274,7 +274,7 @@ public class NotificationController implements Initializable {
         
         // Load existing review
         String sql = "SELECT Rating, Comment FROM Review WHERE EntryID = ?";
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
@@ -318,7 +318,7 @@ public class NotificationController implements Initializable {
 
         String sql = "UPDATE Review SET Comment = ? WHERE EntryID = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);

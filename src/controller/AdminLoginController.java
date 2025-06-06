@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
 
-import dao.Database;
+import dao.DBConnect;
 import model.getData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -50,7 +50,7 @@ public class AdminLoginController implements Initializable {
     public void login() {
         String sql = "SELECT * FROM Admin WHERE Username = ? AND Password = ?";
         
-        connect = Database.connectDB();
+        connect = DBConnect.connectDB();
         
         try {
             prepare = connect.prepareStatement(sql);
