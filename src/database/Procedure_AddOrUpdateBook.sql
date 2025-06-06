@@ -1,6 +1,6 @@
 DELIMITER //
 
-CREATE PROCEDURE AddOrUpdateBook(
+CREATE PROCEDURE Procedure_AddOrUpdateBook(
     IN book_title VARCHAR(200),
     IN copies_to_add INT
 )

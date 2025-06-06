@@ -674,7 +674,7 @@ public class AdminDashboardController implements Initializable {
         connect = DBConnect.connectDB();
         try {
             // Call the ReturnBook stored procedure
-            String sql = "{CALL ReturnBook(?)}";
+            String sql = "{CALL Procedure_ReturnBook(?)}";
             CallableStatement callStmt = connect.prepareCall(sql);
             callStmt.setInt(1, selected.getEntryId());
             callStmt.execute();
@@ -739,7 +739,7 @@ public class AdminDashboardController implements Initializable {
     }
 
     public void addBook() {
-        String callProc = "CALL AddOrUpdateBook(?, ?)";
+        String callProc = "CALL Procedure_AddOrUpdateBook(?, ?)";
         connect = DBConnect.connectDB();
         try {
             Alert alert;
@@ -1399,7 +1399,7 @@ public class AdminDashboardController implements Initializable {
 
         if (newStatus.equals("Fulfilled")) {
             // Gọi procedure ApproveReservation
-            String callProc = "CALL ApproveReservation(?)";
+            String callProc = "CALL Procedure_ApproveReservation(?)";
             connect = DBConnect.connectDB();
             try {
                 prepare = connect.prepareStatement(callProc);

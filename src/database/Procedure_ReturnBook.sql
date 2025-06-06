@@ -1,6 +1,6 @@
-DELIMITER $$
+DELIMITER //
 
-CREATE PROCEDURE ReturnBook(
+CREATE PROCEDURE Procedure_ReturnBook(
     IN p_entry_id INT
 )
 BEGIN
@@ -8,6 +8,6 @@ BEGIN
     UPDATE BorrowEntry 
     SET ReturnDate = NOW() 
     WHERE EntryID = p_entry_id;
-END$$
+END//
 
 DELIMITER ;

@@ -1,6 +1,6 @@
-DELIMITER $$
+DELIMITER //
 
-CREATE TRIGGER trg_after_borrow_insert
+CREATE TRIGGER Trigger_AfterBorrowInsert
 AFTER INSERT ON BorrowEntry
 FOR EACH ROW
 BEGIN
@@ -19,6 +19,6 @@ BEGIN
         SET AvailableCopies = AvailableCopies + 1
         WHERE BookID = NEW.BookID;
     END IF;
-END$$
+END//
 
 DELIMITER ; 

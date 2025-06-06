@@ -1,6 +1,6 @@
-DELIMITER $$
+DELIMITER //
 
-CREATE PROCEDURE CheckCanReserveBook(
+CREATE PROCEDURE Procedure_CheckCanReserveBook(
     IN p_account_id INT,
     IN p_book_id INT,
     OUT can_reserve INT
@@ -23,6 +23,6 @@ BEGIN
     ELSE
         SET can_reserve = 1;
     END IF;
-END $$
+END //
 
 DELIMITER ;
