@@ -157,11 +157,11 @@
                      <children>
                         <TableView fx:id="borrowedBooks_tableView" layoutX="20.0" layoutY="20.0" prefHeight="550.0" prefWidth="1025.0">
                            <columns>
+                              <TableColumn fx:id="col_bb_bookId" prefWidth="151.3333740234375" text="Book ID" />
                               <TableColumn fx:id="col_bb_bookTitle" prefWidth="259.3332824707031" text="Book Title" />
                               <TableColumn fx:id="col_bb_author" prefWidth="246.0" text="Author" />
                               <TableColumn fx:id="col_bb_borrowDate" prefWidth="194.00006103515625" text="Borrow Date" />
                               <TableColumn fx:id="col_bb_returnDate" minWidth="0.0" prefWidth="170.666748046875" text="Return Date" />
-                              <TableColumn fx:id="col_bb_status" prefWidth="151.3333740234375" text="Status" />
                            </columns>
                         </TableView>
                      </children>

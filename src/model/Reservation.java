@@ -17,6 +17,7 @@ public class Reservation {
         this.status = status;
     }
 
+    // Getters
     public int getId() {
         return id;
     }
@@ -37,6 +38,7 @@ public class Reservation {
         return status;
     }
 
+    // Setters
     public void setId(int id) {
         this.id = id;
     }

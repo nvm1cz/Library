@@ -1,22 +1,15 @@
 package model;
 
 public class UserAccount {
-    private int accountId;
     private String username;
     private String password;
     private String borrowerId;
-    private String borrowerName;
+    private String borrowerName;  // For display purposes
 
-    public UserAccount(int accountId, String username, String password, String borrowerId, String borrowerName) {
-        this.accountId = accountId;
+    public UserAccount(String borrowerId, String username, String password) {
         this.username = username;
         this.password = password;
         this.borrowerId = borrowerId;
-        this.borrowerName = borrowerName;
-    }
-
-    public int getAccountId() {
-        return accountId;
     }
 
     public String getUsername() {
@@ -35,9 +28,6 @@ public class UserAccount {
         return borrowerName;
     }
 
-    public void setAccountId(int accountId) {
-        this.accountId = accountId;
-    }
 
     public void setUsername(String username) {
         this.username = username;
