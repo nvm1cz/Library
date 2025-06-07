@@ -10,7 +10,7 @@ FullName VARCHAR(100)
 
 -- Bảng Borrower
 CREATE TABLE Borrower (
-BorrowerID VARCHAR(50) PRIMARY KEY, -- mã SV hoặc ID cấp cho người ngoài
+BorrowerID VARCHAR(50) PRIMARY KEY, 
 FullName VARCHAR(100),
 Phone VARCHAR(20),
 IsStudent BOOLEAN NOT NULL
@@ -28,7 +28,7 @@ ON UPDATE CASCADE
 ON DELETE SET NULL
 );
 
--- Bảng Book (không còn cột Author)
+-- Bảng Book 
 CREATE TABLE Book (
 BookID INT AUTO_INCREMENT PRIMARY KEY,
 Title VARCHAR(200) NOT NULL,
@@ -43,7 +43,7 @@ AuthorID INT AUTO_INCREMENT PRIMARY KEY,
 FullName VARCHAR(100) NOT NULL
 );
 
--- Bảng BookAuthor (nhiều-nhiều)
+-- Bảng BookAuthor 
 CREATE TABLE BookAuthor (
 BookID INT NOT NULL,
 AuthorID INT NOT NULL,
