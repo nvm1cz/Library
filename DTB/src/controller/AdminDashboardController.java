@@ -101,15 +101,12 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private TableView<UserAccount> users_tableView;
 
-    @FXML
-    private TableColumn<UserAccount, Integer> col_accountId;
 
     @FXML
     private TableColumn<UserAccount, String> col_username;
 
     @FXML
-    private TableColumn<UserAccount, String> col_password;
-
+    private TableColumn<UserAccount, String> col_borrowCount;
     @FXML
     private TableColumn<UserAccount, String> col_borrowerId;
 
@@ -1063,13 +1060,20 @@ public class AdminDashboardController implements Initializable {
     public ObservableList<UserAccount> usersList(String searchTerm) {
         ObservableList<UserAccount> list = FXCollections.observableArrayList();
         
-        String sql = "SELECT b.BorrowerID, b.FullName, ua.Username " +
-                     "FROM Borrower b " +
-                     "LEFT JOIN UserAccount ua ON b.BorrowerID = ua.BorrowerID ";
+        String sql = "SELECT b.BorrowerID, b.Fullname, ua.Username,\n"
+        		+ "       ISNULL(be.borrowCount, 0) AS borrowCount\n"
+        		+ "FROM Borrower b\n"
+        		+ "LEFT JOIN UserAccount ua ON b.BorrowerID = ua.BorrowerID\n"
+        		+ "LEFT JOIN (\n"
+        		+ "    SELECT BorrowerID, COUNT(*) AS borrowCount\n"
+        		+ "    FROM BorrowEntry\n"
+        		+ "    GROUP BY BorrowerID\n"
+        		+ ") be ON b.BorrowerID = be.BorrowerID\n"
+        		+ " ";
 
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
             sql += "WHERE LOWER(ISNULL(ua.Username, '')) LIKE ? " +
-                   "OR LOWER(b.FullName) LIKE ? " +
+                   "OR LOWER(b.Fullname) LIKE ? " +
                    "OR LOWER(b.BorrowerID) LIKE ? ";
         }
 
@@ -1091,8 +1095,8 @@ public class AdminDashboardController implements Initializable {
                 list.add(new UserAccount(
                     result.getString("BorrowerID"),
                     result.getString("Username"),  // will be null if not created
-                    null                            // do not expose password
-                    // optionally add FullName if your UserAccount class has it
+                    result.getString("Fullname"),// do not expose password
+                    result.getInt("borrowCount")// optionally add FullName if your UserAccount class has it
                 ));
             }
         } catch (Exception e) {
@@ -1109,11 +1113,10 @@ public class AdminDashboardController implements Initializable {
 
     public void showUsers(String searchTerm) {
         ObservableList<UserAccount> list = usersList(searchTerm);
-        col_accountId.setCellValueFactory(new PropertyValueFactory<>("accountId"));
         col_username.setCellValueFactory(new PropertyValueFactory<>("username"));
-        col_password.setCellValueFactory(new PropertyValueFactory<>("password"));
         col_borrowerId.setCellValueFactory(new PropertyValueFactory<>("borrowerId"));
         col_borrowerName.setCellValueFactory(new PropertyValueFactory<>("borrowerName"));
+        col_borrowCount.setCellValueFactory(new PropertyValueFactory<>("borrowCount"));
         users_tableView.setItems(list);
     }
 
