@@ -1,2 +1,0 @@
-# Database Project
-MY LIBRARY
