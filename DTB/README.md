@@ -4,4 +4,5 @@ Hướng dẫn bạn cài đặt demo database
 3. Trong tab SQL Server Network Configuration, mở Protocols for SQLEXPRESS, bạn sẽ thấy mục TCP/IP, chọn Enable TCP/IP
 4. Mở Properties của TCP/IP, trong phần IP Addresses, tìm IPAll ở dưới cùng, đặt TCP Port là 1433 còn TCP Dynamic ports thì để trống
 5. Restart server SQLEXPRESS trong tab SQL Server Services
-6. Xong rồi chạy code Main.java
+Xong rồi chạy file SQLQuery2.sql để tạo database tên LIB
+Chạy code Main.java
