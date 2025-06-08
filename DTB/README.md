@@ -8,3 +8,4 @@
    
 Xong rồi chạy file SQLQuery2.sql để tạo database tên LIB
 Chạy code Main.java
+A copy of code could be downloaded here: https://limewire.com/d/HTxIC#vP2rGs2khc
