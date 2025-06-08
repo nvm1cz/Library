@@ -1,4 +1,15 @@
-﻿--Queries tạo bảng
+-- LIB is the database's name in the code, should you want a different database name, kindly rename the database's name in DBConnect.java
+-- Create the database if it doesn't exist
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'LIB')
+BEGIN
+    CREATE DATABASE LIB;
+END
+GO
+
+-- Use the school database
+USE LIB;
+GO
+--Queries tạo bảng
 CREATE TABLE Admin(
 	AdminID INT IDENTITY(1,1),
 	Username VARCHAR(20) UNIQUE NOT NULL,
@@ -74,6 +85,7 @@ CREATE TABLE Reservation(
     FOREIGN KEY (BorrowerID) REFERENCES UserAccount(BorrowerID) ON UPDATE CASCADE ON DELETE CASCADE,  
     FOREIGN KEY (BookID) REFERENCES Book(BookID) ON UPDATE CASCADE ON DELETE CASCADE
 );
+GO
 --Procedure thêm sách
 CREATE PROCEDURE AddBook
     @book_id INT NULL,
@@ -103,6 +115,7 @@ BEGIN
         VALUES (@book_id, @book_title, @copies_to_add, @copies_to_add, 0);
     END
 END;
+GO
 --Trigger preventing available copies lower than 0
 CREATE TRIGGER trg_PreventNegativeAvailableCopies
 ON Book
@@ -119,6 +132,7 @@ BEGIN
         ROLLBACK ;
     END
 END;
+GO
 --Procedure thêm thể loại
 CREATE PROCEDURE AddGenre
     @genreName NVARCHAR(100)
@@ -126,6 +140,7 @@ AS
 BEGIN
     INSERT INTO Genre (Name) VALUES (@genreName);
 END
+GO
 --Procedure thêm tác giả
 CREATE PROCEDURE AddAuthor
     @authorName NVARCHAR(100)
@@ -133,6 +148,7 @@ AS
 BEGIN
     INSERT INTO Author (Name) VALUES (@authorName);
 END
+GO
 --Procedure update sách
 CREATE PROCEDURE UpdateBook
     @bookID INT,
@@ -147,6 +163,7 @@ BEGIN
         WHERE BookID = @bookID;
     END
 END
+GO
 --Procedure xóa sách
 CREATE PROCEDURE DeleteBook
     @bookID INT
@@ -171,6 +188,7 @@ BEGIN
     DELETE FROM Book
     WHERE BookID = @bookID;
 END;
+GO
 --Procedure thêm tác giả cho sách
 CREATE PROCEDURE AddBookAuthor
     @BookID INT,
@@ -181,6 +199,7 @@ BEGIN
     INSERT INTO BookAuthor (BookID, AuthorID)
     VALUES (@BookID, @AuthorID);
 END
+GO
 --Procedure thêm thể loại cho sách
 CREATE PROCEDURE AddBookGenre
     @BookID INT,
@@ -191,6 +210,7 @@ BEGIN
     INSERT INTO BookGenre (BookID, GenreID)
     VALUES (@BookID, @GenreID);
 END
+GO
 --Procedure thêm Admin
 CREATE PROCEDURE addAdmin
     @Username VARCHAR(20),
@@ -206,6 +226,7 @@ BEGIN
     INSERT INTO Admin (Username, [Password], Fullname)
     VALUES (@Username, @Password, @Fullname);
 END;
+GO
 --Procedure thêm Borrower
 CREATE PROCEDURE addBorrower
     @Name NVARCHAR(100),
@@ -242,6 +263,7 @@ BEGIN
     INSERT INTO Borrower (BorrowerID, Fullname, Phone, IsStudent)
     VALUES (@NewBorrowerID, @Name, @Phone, @IsStudent);
 END;
+GO
 --Procedure xóa Borrower
 CREATE PROCEDURE deleteBorrower
     @BorrowerID VARCHAR(20)
@@ -274,6 +296,7 @@ BEGIN
     -- 5. Delete borrower
     DELETE FROM Borrower WHERE BorrowerID = @BorrowerID;
 END;
+GO
 --Procedure tạo account
 CREATE PROCEDURE createUserAccount
     @BorrowerID VARCHAR(20),
@@ -307,6 +330,7 @@ BEGIN
     INSERT INTO UserAccount (BorrowerID, Username, Password)
     VALUES (@BorrowerID, @Username, @Password);
 END;
+GO
 --Procedure thêm BorrowEntry
 CREATE PROCEDURE borrowBook
     @BorrowerID VARCHAR(20),
@@ -332,6 +356,7 @@ BEGIN
 		@AdminID
     )
 END
+GO
 --Trigger insert vào borrowEntry
 CREATE TRIGGER trg_BorrowEntry_Insert
 ON BorrowEntry
@@ -381,6 +406,7 @@ BEGIN
         GROUP BY BookID
     ) AS borrow_count ON b.BookID = borrow_count.BookID;
 END
+GO
 --Procedure trả sách
 CREATE PROCEDURE returnBook
     @EntryID INT
@@ -400,6 +426,7 @@ BEGIN
     SET ReturnDate = GETDATE()
     WHERE EntryID = @EntryID;
 END
+GO
 --Trigger trả sách
 CREATE TRIGGER trg_BorrowEntry_Return
 ON BorrowEntry
@@ -415,6 +442,7 @@ BEGIN
     JOIN deleted entry_deleted ON entry_inserted.EntryID = entry_deleted.EntryID
     WHERE entry_deleted.ReturnDate IS NULL AND entry_inserted.ReturnDate IS NOT NULL;
 END
+GO
 --Procedure đặt sách
 CREATE PROCEDURE makeReservation
     @BorrowerID VARCHAR(20),
@@ -442,6 +470,7 @@ BEGIN
     INSERT INTO Reservation (BorrowerID, BookID, ReservationDate, Status)
     VALUES (@BorrowerID, @BookID, GETDATE(), 'Pending');
 END
+GO
 --Procedure cancel pending reservation
 CREATE PROCEDURE cancelPendingReservation
     @ReservationID INT
@@ -453,6 +482,7 @@ BEGIN
     SET Status = 'Cancelled'
     WHERE ReservationID = @ReservationID AND Status = 'Pending';
 END
+GO
 --Procedure cancel fulfilled reservation
 CREATE PROCEDURE cancelFulfilledReservation
     @ReservationID INT
@@ -479,6 +509,7 @@ BEGIN
     SET Status = 'Cancelled'
     WHERE ReservationID = @ReservationID;
 END
+GO
 --Procedure fulfil reservation
 CREATE PROCEDURE fulfilReservation
     @ReservationID INT
@@ -505,6 +536,7 @@ BEGIN
     SET Status = 'Fulfilled'
     WHERE ReservationID = @ReservationID;
 END
+GO
 --Procedure complete reservation
 CREATE PROCEDURE completeReservation
     @ReservationID INT,
@@ -533,6 +565,7 @@ BEGIN
     SET Status = 'Complete'
     WHERE ReservationID = @ReservationID;
 END
+GO
 --View để xem sách đang được mượn
 CREATE VIEW View_CurrentBorrows AS
 SELECT 
