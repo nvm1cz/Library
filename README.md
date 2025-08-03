@@ -25,7 +25,7 @@ java -cp "lib/*:bin" application.Main
 - lib/: Libraries (JDBC, JavaFX, FontAwesome)
 - bin/: Compiled .class files
 
-##📞 Contact
+## 📞 Contact
 - Author: Nguyễn Vũ Minh
 - Email: minhame25@gmail.com
 - GitHub: github.com/nvm1cz
