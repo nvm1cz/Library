@@ -18,6 +18,7 @@ A JavaFX-based library app with a clean UI for both students and administrators.
 4. Run:
 ```bash
 java -cp "lib/*:bin" application.Main
+```
 
 ## 🧩 Project Structure
 - src/: Java source code
