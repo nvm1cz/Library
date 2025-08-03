@@ -10,7 +10,7 @@ A JavaFX-based library app with a clean UI for both students and administrators.
 - Java: JDK 11 or higher
 - JavaFX: Version 24 (included in the lib folder)
 - Database: MySQL (mysql-connector-j-9.3.0.jar)
-- IDE: Eclipse or IntelliJ IDEA (recommended)
+- IDE: Visual Studio Code (recommended)
 ## 🚀 Quick Start
 1. Clone repo & import into IDE
 2. Configure DB in `database/`
