@@ -19,12 +19,12 @@ A JavaFX-based library app with a clean UI for both students and administrators.
 ```bash
 java -cp "lib/*:bin" application.Main
 
-🧩 Project Structure
+## 🧩 Project Structure
 - src/: Java source code
 - lib/: Libraries (JDBC, JavaFX, FontAwesome)
 - bin/: Compiled .class files
 
-📞 Contact
-Author: Nguyễn Vũ Minh
-Email: minhame25@gmail.com
-GitHub: https://github.com/nvm1cz
+##📞 Contact
+- Author: Nguyễn Vũ Minh
+- Email: minhame25@gmail.com
+- GitHub: github.com/nvm1cz
