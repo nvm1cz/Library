@@ -28,4 +28,4 @@ java -cp "lib/*:bin" application.Main
 ## 📞 Contact
 - Author: Nguyễn Vũ Minh
 - Email: minhame25@gmail.com
-- GitHub: github.com/nvm1cz
+- GitHub: https://github.com/nvm1cz
