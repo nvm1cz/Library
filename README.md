@@ -26,6 +26,6 @@ java -cp "lib/*:bin" application.Main
 - bin/: Compiled .class files
 
 ## 📞 Contact
-- Author: Nguyễn Vũ Minh
+- Author: Nguyễn Vũ Minh - Đỗ Thành Hưng
 - Email: minhame25@gmail.com
 - GitHub: https://github.com/nvm1cz
